@@ -1,6 +1,5 @@
 from threading import RLock
 
-from Powers import LOGGER
 from Powers.database import MongoDB
 
 INSERTION_LOCK = RLock()
@@ -45,6 +44,7 @@ class Greetings(MongoDB):
     def get_welcome_media(self):
         with INSERTION_LOCK:
             return self.chat_info["welcome_media"]
+
     def get_welcome_msgtype(self):
         with INSERTION_LOCK:
             return self.chat_info["welcome_mtype"]
@@ -78,32 +78,32 @@ class Greetings(MongoDB):
         with INSERTION_LOCK:
             return self.update({"_id": self.chat_id}, {"goodbye": status})
 
-    def set_welcome_text(self, welcome_text: str, mtype,media=None):
+    def set_welcome_text(self, welcome_text: str, mtype, media=None):
         with INSERTION_LOCK:
             self.update(
                 {"_id": self.chat_id},
-                {"welcome_text": welcome_text,"welcome_mtype":mtype},
+                {"welcome_text": welcome_text, "welcome_mtype": mtype},
             )
             if media:
                 self.update(
                     {"_id": self.chat_id},
-                    {"welcome_media": media,"welcome_mtype":mtype}
+                    {"welcome_media": media, "welcome_mtype": mtype}
                 )
 
-            return 
+            return
 
-    def set_goodbye_text(self, goodbye_text: str,mtype,media=None):
+    def set_goodbye_text(self, goodbye_text: str, mtype, media=None):
         with INSERTION_LOCK:
             self.update(
                 {"_id": self.chat_id},
-                {"goodbye_text": goodbye_text,"goodbye_mtype":mtype},
+                {"goodbye_text": goodbye_text, "goodbye_mtype": mtype},
             )
             if media:
                 self.update(
                     {"_id": self.chat_id},
-                    {"goodbye_media": media,"goodbye_mtype":mtype}
+                    {"goodbye_media": media, "goodbye_mtype": mtype}
                 )
-                return 
+                return
 
     def set_current_cleanservice_settings(self, status: bool):
         with INSERTION_LOCK:
@@ -149,18 +149,17 @@ class Greetings(MongoDB):
                 "cleanwelcome_id": None,
                 "cleangoodbye_id": None,
                 "cleangoodbye": False,
-                "cleanservice": True,
+                "cleanservice": False,
                 "goodbye_text": "Sad to see you leaving {first}.\nTake Care!",
                 "welcome_text": "Hey {first}, welcome to {chatname}!",
                 "welcome": True,
                 "goodbye": True,
-                "welcome_media":False,
-                "welcome_mtype":False,
-                "goodbye_media":False,
-                "goodbye_mtype":False
+                "welcome_media": False,
+                "welcome_mtype": False,
+                "goodbye_media": False,
+                "goodbye_mtype": False
             }
             self.insert_one(new_data)
-            LOGGER.info(f"Initialized Greetings Document for chat {self.chat_id}")
             return new_data
         return chat_data
 
@@ -173,7 +172,7 @@ class Greetings(MongoDB):
 
     def clean_greetings(self):
         with INSERTION_LOCK:
-            return self.delete_one({"_id":self.chat_id})
+            return self.delete_one({"_id": self.chat_id})
 
     @staticmethod
     def count_chats(query: str):
