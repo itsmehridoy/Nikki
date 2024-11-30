@@ -217,11 +217,10 @@ Fᴜʟʟ Iɴғᴏʀᴍᴀᴛɪᴏɴ Mᴇɴᴜ ✨..."""
             )
             msg = "Contact me in PM to get the list of possible commands."
 
-        await c.send_message(
-            chat_id=m.chat.id,
+        await m.reply_text(
             text=msg,
             reply_markup=keyboard,
-            protect_content=True,
+            quote=True,
         )
 
     return await add_served_chat(m.chat.id)
