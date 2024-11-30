@@ -5,8 +5,6 @@ from pyrogram import Client, __version__
 from pyrogram.raw.all import layer
 from Abg import patch
 
-from extras.git import git
-from Powers.misc import heroku
 from Powers import (LOGGER, MESSAGE_DUMP,
                     NO_LOAD, load_cmds)
 from Powers.database import MongoDB
