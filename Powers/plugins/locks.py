@@ -9,12 +9,11 @@ from pyrogram.errors import ChatAdminRequired, ChatNotModified, RPCError
 from pyrogram.types import CallbackQuery, ChatPermissions, Message
 
 from Powers import LOGGER
-from Powers.bot_class import Gojo
+from Powers.bot_class import Nikki
 from Powers.database.approve_db import Approve
 from Powers.database.locks_db import LOCKS
-from Powers.supports import get_support_staff
+from Powers.misc import get_support_staff
 from Powers.utils.caching import ADMIN_CACHE, admin_cache_reload
-from Powers.utils.custom_filters import command, restrict_filter
 from Powers.utils.kbhelpers import ikb
 
 l_t = """
@@ -40,7 +39,7 @@ l_t = """
 """
 
 
-@Gojo.on_message(command("locktypes"))
+@Nikki.on_cmd("locktypes")
 async def lock_types(_, m: Message):
     await m.reply_text(
         l_t
@@ -48,8 +47,9 @@ async def lock_types(_, m: Message):
     return
 
 
-@Gojo.on_message(command("lock") & restrict_filter)
-async def lock_perm(c: Gojo, m: Message):
+@Nikki.on_cmd("lock", group_only=True, self_admin=True)
+@Nikki.adminsOnly(permissions="can_change_info", is_both=True)
+async def lock_perm(c: Nikki, m: Message):
     if len(m.text.split()) < 2:
         await m.reply_text("Please enter a permission to lock!")
         return
@@ -201,7 +201,8 @@ Use /locktypes to get the lock types"""
     return
 
 
-@Gojo.on_message(command("locks") & restrict_filter)
+@Nikki.on_cmd("locks", group_only=True, self_admin=True)
+@Nikki.adminsOnly(permissions="can_change_info", is_both=True)
 async def view_locks(_, m: Message):
     chkmsg = await m.reply_text(text="Checking Chat permissions...")
     v_perm = m.chat.permissions
@@ -260,8 +261,9 @@ async def view_locks(_, m: Message):
     return
 
 
-@Gojo.on_message(command("unlock") & restrict_filter)
-async def unlock_perm(c: Gojo, m: Message):
+@Nikki.on_cmd("unlock", group_only=True, self_admin=True)
+@Nikki.adminsOnly(permissions="can_change_info", is_both=True)
+async def unlock_perm(c: Nikki, m: Message):
     if len(m.text.split()) < 2:
         await m.reply_text("Please enter a permission to unlock!")
         return
@@ -442,7 +444,7 @@ async def delete_messages(c: Gojo, m: Message):
         return
 
 
-async def is_approved_user(c: Gojo, m: Message):
+async def is_approved_user(c: Nikki, m: Message):
     approved_users = Approve(m.chat.id).list_approved()
     ul = [user[0] for user in approved_users]
     try:
@@ -481,8 +483,8 @@ async def is_approved_user(c: Gojo, m: Message):
         return False
 
 
-@Gojo.on_message(filters.service & filters.group, 19)
-async def servicess(c: Gojo, m: Message):
+@Nikki.on_message(filters.service & filters.group, 19)
+async def servicess(c: Nikki, m: Message):
     if m.service != MST.NEW_CHAT_MEMBERS:
         return
     approved = await is_approved_user(c, m)
@@ -500,8 +502,8 @@ async def servicess(c: Gojo, m: Message):
     return
 
 
-@Gojo.on_message(filters.group & ~filters.me, 3)
-async def lock_del_mess(c: Gojo, m: Message):
+@Nikki.on_message(filters.group & ~filters.me, 3)
+async def lock_del_mess(c: Nikki, m: Message):
     lock = LOCKS()
     chat_locks = lock.get_lock_channel(m.chat.id)
     if not chat_locks:
@@ -560,23 +562,18 @@ __buttons__ = [
     ], ]
 
 __HELP__ = """
-**Locks**
+**Dᴇsᴄʀɪᴘᴛɪᴏɴ :**
+ᴜsᴇ ᴛʜɪs ᴛᴏ ʟᴏᴄᴋ ɢʀᴏᴜᴘ ᴘᴇʀᴍɪssɪᴏɴs ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ʟᴏᴄᴋ ᴀɴᴅ ᴜɴʟᴏᴄᴋ ᴘᴇʀᴍɪssɪᴏɴ ᴛʏᴘᴇs ɪɴ ᴛʜᴇ ᴄʜᴀᴛ.
 
-Use this to lock group permissions.
-Allows you to lock and unlock permission types in the chat.
-
-**Usage:**
-• /lock `<type>`: Lock Chat permission.
-• /unlock `<type>`: Unlock Chat permission.
-• /locks: View Chat permission.
-• /locktypes: Check available lock types!
-
-**Example:**
-`/lock media`: this locks all the media messages in the chat."""
+**Tʜᴇ Fᴏʟʟᴏᴡɪɴɢ Cᴏᴍᴍᴀɴᴅs Aʀᴇ Aᴅᴍɪɴ Oɴʟʏ :**
+• /lock : ʟᴏᴄᴋ ᴄʜᴀᴛ ᴘᴇʀᴍɪssɪᴏɴ.
+• /unlock : ᴜɴʟᴏᴄᴋ ᴄʜᴀᴛ ᴘᴇʀᴍɪssɪᴏɴ.
+• /locks: ᴠɪᴇᴡ ᴄʜᴀᴛ ᴘᴇʀᴍɪssɪᴏɴ.
+• /locktypes: ᴄʜᴇᴄᴋ ᴀᴠᴀɪʟᴀʙʟᴇ ʟᴏᴄᴋ ᴛʏᴘᴇs."""
 
 
-@Gojo.on_callback_query(filters.regex("^LOCK_TYPES"))
-async def lock_types_callback(c: Gojo, q: CallbackQuery):
+@Nikki.on_cb("LOCK_TYPES")
+async def lock_types_callback(c: Nikki, q: CallbackQuery):
     data = q.data
 
     if data == "LOCK_TYPES":
