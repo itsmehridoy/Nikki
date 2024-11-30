@@ -3,7 +3,7 @@ from Config import Config
 from Powers import OWNER_ID, SUPPORT_USERS
 from Powers.database.support_db import SUPPORTS
 
-HAPP = None
+SUDOERS = user(OWNER_ID)
 
 async def load_support_users():
     support = SUPPORTS()
