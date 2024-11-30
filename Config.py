@@ -10,7 +10,7 @@ class Config:
     DEV_USERS = os.environ.get("DEV_USERS", "6213690669")
     SUDO_USERS = os.environ.get("SUDO_USERS", "6213690669")
     WHITELIST_USERS = os.environ.get("WHITELIST_USERS", "6213690669")
-    SQLURL = os.environ.get("")
+    SQLURL = os.environ.get("postgres://uckq345i07jr56:p147f8181671593c1966dd721ccb185f9e419fcd06a8a96eb185eaa593a033f8d@cbtilg6vevjp8e.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/dfhmfrq4iji2m4")
     DB_URI = os.environ.get("DB_URI", "mongodb+srv://GroupSentry:jT6MpjXATacUb2aU@cluster0.4nzkt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     DB_NAME = os.environ.get("DB_NAME", "NikkiDB")
     NO_LOAD = os.environ.get("NO_LOAD", "")
