@@ -817,7 +817,7 @@ async def ban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
-      except UserNotParticipant:
+    except UserNotParticipant:
         await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
