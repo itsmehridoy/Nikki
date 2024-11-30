@@ -10,7 +10,6 @@ from Powers.utils.string import build_keyboard, parse_button
 
 @Nikki.on_cmd("rules", group_only=True)
 async def get_rules(_, m: Message):
-async def get_rules(c: Nikki, m: Message):
     db = Rules(m.chat.id)
     msg_id = m.reply_to_message.id if m.reply_to_message else m.id
 
