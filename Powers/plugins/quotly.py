@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 
 from Powers.bot_class import Nikki as app
-from Powers.helper.http import fetch
+from Powers.misc import fetch
 
 
 class QuotlyException(Exception):
