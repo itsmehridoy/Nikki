@@ -15,7 +15,7 @@ flask_restful
 requests==2.32.3
 tgcrypto==1.2.5
 ujson==5.10.0
-urllib3==2.2.0
+urllib3==2.2.3
 motor[srv]==3.6.0
 python-dotenv==1.0.1
 speedtest-cli==2.1.3
