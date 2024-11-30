@@ -323,44 +323,45 @@ async def calculate_handler(self, ctx):
 
 @Nikki.on_cb("calc")
 async def calc_cb(self, query):
-        _, uid, data = query.data.split("|")
-        if query.from_user.id != int(uid):
-            return await query.answer("Who are you??", show_alert=True, cache_time=5)
-        try:
-            text = query.message.text.split("\n")[0].strip().split("=")[0].strip()
-            text = '' if f"Made by @{self.me.username}" in text else text
-            inpt = text + query.data
-            result = ""
-            if data == "=":
-                result = calcExpression(text)
-                text = ""
-            elif data == "DEL":
-                text = text[:-1]
-            elif data == "AC":
-                text = ""
-            else:
-                dot_dot_check = re.findall(r"(\d*\.\.|\d*\.\d+\.)", inpt)
-                opcheck = re.findall(r"([*/\+-]{2,})", inpt)
-                if not dot_dot_check and not opcheck:
-                    strOperands = re.findall(r"(\.\d+|\d+\.\d+|\d+)", inpt)
-                    if strOperands:
-                        text += data
-                        result = calcExpression(text)
+    _, uid, data = query.data.split("|")
+    if query.from_user.id != int(uid):
+        return await query.answer("Who are you??", show_alert=True, cache_time=5)
+    try:
+        # Initialize text and result
+        text = query.message.text.split("\n")[0].strip().split("=")[0].strip()
+        text = '' if f"Made by @{self.me.username}" in text else text
+        inpt = text + query.data
+        result = ""
 
-            text = f"{text:<50}"
-            if result:
-                if text:
-                    text += f"\n{result:>50}"
-                else:
-                    text = result
-            text += f"\n\nMade by @{self.me.username}"
-            await query.message.edit_msg(
-                text=text,
-                disable_web_page_preview=True,
-                reply_markup=calc_btn(query.from_user.id)
-            )
-        except Exception as error:
-            LOGGER.error(error)
+        # Handle calculation logic
+        if data == "=":
+            result = calcExpression(text)
+            text = ""
+        elif data == "DEL":
+            text = text[:-1]
+        elif data == "AC":
+            text = ""
+        else:
+            # Check for valid operands before updating the text
+            dot_dot_check = re.findall(r"(\d*\.\.|\d*\.\d+\.)", inpt)
+            opcheck = re.findall(r"([*/\+-]{2,})", inpt)
+            if not dot_dot_check and not opcheck:
+                strOperands = re.findall(r"(\.\d+|\d+\.\d+|\d+)", inpt)
+                if strOperands:
+                    text += data
+                    result = calcExpression(text)
+
+        # Only show the result, remove all other text
+        text = f"{result}"
+
+        # Edit the message with the result
+        await query.message.edit_text(
+            text=text,
+            disable_web_page_preview=True,
+            reply_markup=calc_btn(query.from_user.id)  # Update keyboard
+        )
+    except Exception as error:
+        LOGGER.error(error)
 
 @Nikki.on_cmd(["font", "fonts"])
 async def style_buttons(c, m, cb=False):
