@@ -2,7 +2,7 @@ from traceback import format_exc
 
 from pyrogram import enums
 from pyrogram.errors import (ChatAdminRequired, PeerIdInvalid, RightForbidden,
-                             RPCError, UserAdminInvalid)
+                             RPCError, UserAdminInvalid, UserNotParticipant)
 from pyrogram.filters import regex
 from pyrogram.types import (CallbackQuery, ChatPrivileges, Message)
 
@@ -98,6 +98,8 @@ async def tban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
@@ -179,6 +181,8 @@ async def stban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
@@ -282,6 +286,8 @@ async def dtban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
@@ -368,6 +374,8 @@ async def kick_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
@@ -427,6 +435,8 @@ async def skick_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to kick this user.")
     except RPCError as ef:
@@ -504,6 +514,8 @@ async def dkick_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to kick this user.")
     except RPCError as ef:
@@ -622,6 +634,8 @@ async def sban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
@@ -709,6 +723,8 @@ async def dban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+    except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
@@ -801,6 +817,8 @@ async def ban_usr(c: Nikki, m: Message):
         await m.reply_text(
             text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
         )
+      except UserNotParticipant:
+        await m.reply_text("User is not part of the group")
     except RightForbidden:
         await m.reply_text(text="I don't have enough rights to ban this user.")
     except RPCError as ef:
