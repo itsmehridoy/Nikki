@@ -321,19 +321,16 @@ async def calculate_handler(self, ctx):
         quote=True,
     )
 
-@Nikki.on_cb("calc")
+@Nikki.on_callback_query(filters.regex("^calc"))
 async def calc_cb(self, query):
     _, uid, data = query.data.split("|")
     if query.from_user.id != int(uid):
         return await query.answer("Who are you??", show_alert=True, cache_time=5)
     try:
-        # Initialize text and result
         text = query.message.text.split("\n")[0].strip().split("=")[0].strip()
-        text = '' if f"Made by @{self.me.username}" in text else text
+        text = "" if f"Made by @{self.me.username}" in text else text
         inpt = text + query.data
         result = ""
-
-        # Handle calculation logic
         if data == "=":
             result = calcExpression(text)
             text = ""
@@ -342,23 +339,24 @@ async def calc_cb(self, query):
         elif data == "AC":
             text = ""
         else:
-            # Check for valid operands before updating the text
             dot_dot_check = re.findall(r"(\d*\.\.|\d*\.\d+\.)", inpt)
             opcheck = re.findall(r"([*/\+-]{2,})", inpt)
             if not dot_dot_check and not opcheck:
-                strOperands = re.findall(r"(\.\d+|\d+\.\d+|\d+)", inpt)
-                if strOperands:
+                if strOperands := re.findall(r"(\.\d+|\d+\.\d+|\d+)", inpt):
                     text += data
                     result = calcExpression(text)
 
-        # Only show the result, remove all other text
-        text = f"{result}"
-
-        # Edit the message with the result
-        await query.message.edit_text(
+        text = f"{text:<50}"
+        if result:
+            if text:
+                text += f"\n{result:>50}"
+            else:
+                text = result
+        text += f"\n\nMade by @{self.me.username}"
+        await query.message.edit_msg(
             text=text,
             disable_web_page_preview=True,
-            reply_markup=calc_btn(query.from_user.id)  # Update keyboard
+            reply_markup=calc_btn(query.from_user.id),
         )
     except Exception as error:
         LOGGER.error(error)
