@@ -97,16 +97,16 @@ async def unkangs(self: Client, ctx: Message, strings):
             await app.invoke(RemoveStickerFromSet(sticker=sticker))
             await pp.edit_msg("Unkanging successful.")
         except Exception as e:
-            await pp.edit_msg(strings("unkang_error").format(e=e))
+            await pp.edit_msg("Failed remove sticker from your pack.\n\nERR: {e}").format(e=e)
     else:
-        await ctx.reply_msg(strings("unkang_help").format(c=self.me.username), del_in=6)
+        await ctx.reply_msg("Please reply sticker that created by {c} to remove sticker from your pack.").format(c=self.me.username)
 
 
 @app.on_cmd(["curi", "kang"])
 async def kang_sticker(self: Client, ctx: Message, strings):
     if not ctx.from_user:
-        return await ctx.reply_msg(strings("anon_warn"), del_in=6)
-    prog_msg = await ctx.reply_msg(strings("kang_msg"))
+        return await ctx.reply_msg("You are anon admin, kang stickers in my pm.")
+    prog_msg = await ctx.reply_msg("Trying to steal your sticker...")
     sticker_emoji = "🤔"
     packnum = 0
     packname_found = False
@@ -213,7 +213,7 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                 )
             resize = True
     else:
-        return await prog_msg.edit_msg(strings("kang_help"))
+        return await prog_msg.edit_msg("Want me to guess the sticker? Please tag a sticker.")
     try:
         if resize:
             filename = resize_image(filename)
@@ -253,7 +253,7 @@ async def kang_sticker(self: Client, ctx: Message, strings):
         msg_ = media.updates[-1].message
         stkr_file = msg_.media.document
         if packname_found:
-            await prog_msg.edit_msg(strings("exist_pack"))
+            await prog_msg.edit_msg("Using existing sticker pack...")
             await self.invoke(
                 AddStickerToSet(
                     stickerset=InputStickerSetShortName(short_name=packname),
@@ -268,7 +268,7 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                 )
             )
         else:
-            await prog_msg.edit_msg(strings("new_packs"))
+            await prog_msg.edit_msg("Creating a new sticker pack...")
             stkr_title = f"{ctx.from_user.first_name}'s"
             if animated:
                 stkr_title += "AnimPack"
@@ -295,13 +295,12 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                     )
                 )
             except PeerIdInvalid:
-                return await prog_msg.edit_msg(
-                    strings("please_start_msg"),
+                return await prog_msg.edit_msg("It looks like you've never interacted with me in private chat, you need to do that first.."),
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
                                 InlineKeyboardButton(
-                                    strings("click_me"),
+                                    "Click Me"),
                                     url=f"https://t.me/{self.me.username}?start",
                                 )
                             ]
@@ -310,7 +309,7 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                 )
 
     except BadRequest:
-        return await prog_msg.edit_msg(strings("pack_full"))
+        return await prog_msg.edit_msg("Your Sticker Pack is full if your pack is not in v1 Type /kang 1, if it is not in v2 Type /kang 2 and so on.")
     except Exception as all_e:
         await prog_msg.edit_msg(f"{all_e.__class__.__name__} : {all_e}")
     else:
@@ -318,19 +317,19 @@ async def kang_sticker(self: Client, ctx: Message, strings):
             [
                 [
                     InlineKeyboardButton(
-                        text=strings("viewpack"),
+                        text="👀 View Your Pack"),
                         url=f"https://t.me/addstickers/{packname}",
                     )
                 ]
             ]
         )
         await prog_msg.edit_msg(
-            strings("kang_success").format(emot=sticker_emoji),
+            "<b>Sticker successfully stolen!</b>\n<b>Emoji:</b> {emot}").format(emot=sticker_emoji),
             reply_markup=markup,
         )
         # Cleanup
         await self.delete_messages(
-            chat_id=LOG_CHANNEL, message_ids=msg_.id, revoke=True
+            chat_id=MESSAGE_DUMP, message_ids=msg_.id, revoke=True
         )
         try:
             os.remove(filename)
