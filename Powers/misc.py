@@ -1,4 +1,7 @@
 import Powers
+
+from pyrogram.filters import user
+
 from Config import Config
 from Powers import OWNER_ID, SUPPORT_USERS
 from Powers.database.support_db import SUPPORTS
