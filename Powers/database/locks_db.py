@@ -1,101 +1,122 @@
 from threading import RLock
-from time import time
 
-from Powers import LOGGER
 from Powers.database import MongoDB
 
 INSERTION_LOCK = RLock()
 
+lock_t = ["bot", "anti_c_send", "anti_fwd",
+          "anti_fwd_u", "anti_fwd_c", "anti_links"]
 
-class Rules(MongoDB):
-    """Class for rules for chats in bot."""
 
-    db_name = "rules"
+class LOCKS(MongoDB):
+    """Class to store locks"""
 
-    def __init__(self, chat_id: int) -> None:
+    db_name = "locks"
+
+    def __init__(self) -> None:
         super().__init__(self.db_name)
-        self.chat_id = chat_id
-        self.chat_info = self.__ensure_in_db()
 
-    def get_rules(self):
+    def insert_lock_channel(self, chat: int, locktype: str):
+        """
+        locktypes: all, bot, anti_c_send, anti_fwd, anti_fwd_u, anti_fwd_c, anti_links
+        """
+        if locktype == "all":
+            for i in lock_t:
+                curr = self.find_one({"chat_id": chat, "locktype": i})
+                if curr:
+                    continue
+                if i in ["anti_fwd_u", "anti_fwd_c"]:
+                    continue
+                self.insert_one({"chat_id": chat, "locktype": i})
+            return True
+        if curr := self.find_one({"chat_id": chat, "locktype": locktype}):
+            return False
         with INSERTION_LOCK:
-            return self.chat_info["rules"]
+            hmm = self.merge_u_and_c(chat, locktype)
+            if not hmm:
+                self.insert_one({"chat_id": chat, "locktype": locktype})
+        return True
 
-    def set_rules(self, rules: str):
-        with INSERTION_LOCK:
-            self.chat_info["rules"] = rules
-            self.update({"_id": self.chat_id}, {"rules": rules})
+    def remove_lock_channel(self, chat: int, locktype: str):
+        """
+        locktypes: all, bot, anti_c_send, anti_fwd, anti_fwd_u, anti_fwd_c, anti_links
+        """
+        if locktype == "all":
+            for i in lock_t:
+                if curr := self.find_one({"chat_id": chat, "locktype": i}):
+                    self.delete_one({"chat_id": chat, "locktype": i})
+            return True
+        if curr := self.find_one({"chat_id": chat, "locktype": locktype}):
+            with INSERTION_LOCK:
+                self.delete_one({"chat_id": chat, "locktype": locktype})
+            return True
+        else:
+            return False
 
-    def get_privrules(self):
-        with INSERTION_LOCK:
-            return self.chat_info["privrules"]
+    def get_lock_channel(self, chat: int, locktype: str = "all"):
+        """
+        locktypes: anti_c_send, anti_fwd, anti_fwd_u, anti_fwd_c, anti_links, bot
+        """
+        if locktype not in [
+            "anti_c_send",
+            "anti_fwd",
+            "anti_fwd_u",
+            "anti_fwd_c",
+            "anti_links",
+            "bot",
+            "all",
+        ]:
+            return False
+        if locktype != "all":
+            curr = self.find_one(
+                {"chat_id": chat, "locktype": locktype})
+            return bool(curr)
+        else:
+            if not (curr := self.find_all({"chat_id": chat})):
+                return None
+            to_return = {
+                "anti_channel": False,
+                "anti_fwd": {
+                    "user": False,
+                    "chat": False
+                },
+                "anti_links": False,
+                "bot": False
+            }
+            for i in list(curr):
+                if i["locktype"] == "anti_c_send":
+                    to_return["anti_channel"] = True
+                elif i["locktype"] == "anti_fwd":
+                    to_return["anti_fwd"]["user"] = to_return["anti_fwd"]["chat"] = True
+                elif i["locktype"] == "anti_fwd_u":
+                    to_return["anti_fwd"]["user"] = True
+                elif i["locktype"] == "anti_fwd_c":
+                    to_return["anti_fwd"]["chat"] = True
+                elif i["anti_links"] == "anti_links":
+                    to_return["anti_links"] = True
+                elif i["locktype"] == "bot":
+                    to_return["bot"] = True
+                else:
+                    continue
+            return to_return
 
-    def set_privrules(self, privrules: bool):
-        with INSERTION_LOCK:
-            self.chat_info["privrules"] = privrules
-            self.update({"_id": self.chat_id}, {"privrules": privrules})
+    def merge_u_and_c(self, chat: int, locktype: str):
+        if locktype == "anti_fwd_u":
+            curr = self.find_one({"chat_id": chat, "locktype": "anti_fwd_c"})
+        elif locktype == "anti_fwd_c":
+            curr = self.find_one({"chat_id": chat, "locktype": "anti_fwd_u"})
+        else:
+            return False
 
-    def clear_rules(self):
-        with INSERTION_LOCK:
-            return self.delete_one({"_id": self.chat_id})
+        if curr:
+            self.delete_one({"chat_id": chat, "locktype": locktype})
+            self.insert_one({"chat_id": chat, "locktype": "anti_fwd"})
+            return True
+        else:
+            return False
 
-    @staticmethod
-    def count_chats_with_rules():
-        with INSERTION_LOCK:
-            collection = MongoDB(Rules.db_name)
-            return collection.count({"rules": {"$regex": ".*"}})
-
-    @staticmethod
-    def count_privrules_chats():
-        with INSERTION_LOCK:
-            collection = MongoDB(Rules.db_name)
-            return collection.count({"privrules": True})
-
-    @staticmethod
-    def count_grouprules_chats():
-        with INSERTION_LOCK:
-            collection = MongoDB(Rules.db_name)
-            return collection.count({"privrules": False})
-
-    @staticmethod
-    def load_from_db():
-        with INSERTION_LOCK:
-            collection = MongoDB(Rules.db_name)
-            return collection.find_all()
-
-    def __ensure_in_db(self):
-        chat_data = self.find_one({"_id": self.chat_id})
-        if not chat_data:
-            new_data = {"_id": self.chat_id, "privrules": False, "rules": ""}
-            self.insert_one(new_data)
-            return new_data
-        return chat_data
-
-    # Migrate if chat id changes!
-    def migrate_chat(self, new_chat_id: int):
-        old_chat_db = self.find_one({"_id": self.chat_id})
-        new_data = old_chat_db.update({"_id": new_chat_id})
-        self.insert_one(new_data)
-        self.delete_one({"_id": self.chat_id})
-
-    @staticmethod
-    def repair_db(collection):
-        all_data = collection.find_all()
-        keys = {"privrules": False, "rules": ""}
-        for data in all_data:
-            for key, val in keys.items():
-                try:
-                    _ = data[key]
-                except KeyError:
-                    LOGGER.warning(
-                        f"Repairing Rules Database - setting '{key}:{val}' for {data['_id']}",
-                    )
-                    collection.update({"_id": data["_id"]}, {key: val})
-
-
-def __pre_req_all_rules():
-    start = time()
-    LOGGER.info("Starting Rules Database Repair...")
-    collection = MongoDB(Rules.db_name)
-    Rules.repair_db(collection)
-    LOGGER.info(f"Done in {round((time() - start), 3)}s!")
+    def is_particular_lock(self, chat: int, locktype: str):
+        """
+        locktypes: anti_c_send, anti_fwd, anti_fwd_u, anti_fwd_c, anti_links
+        """
+        return bool(curr := self.find_one({"chat_id": chat, "locktype": locktype}))
