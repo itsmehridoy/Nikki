@@ -19,8 +19,3 @@ class Config:
     VERSION = os.environ.get("VERSION", "v2")
     TIME_ZONE = os.environ.get("TIME_ZONE", "Asia/Dhaka")
     WORKERS = int(os.environ.get("WORKERS", 8))
-    HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
-    HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
-    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/itsmehridoy/Nikki")
-    GIT_TOKEN = os.environ.get("GIT_TOKEN", "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")
-    UPSTREAM_BRANCH = os.environ.get("UPSTREAM_BRANCH", "master")
