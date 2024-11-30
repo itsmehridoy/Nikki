@@ -306,7 +306,7 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                                 )
                             ]
                         ]
-                    )
+                    ),
                 )
 
     except BadRequest:
