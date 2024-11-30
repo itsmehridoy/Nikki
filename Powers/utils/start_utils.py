@@ -32,6 +32,7 @@ async def gen_cmds_kb(m: Message or CallbackQuery):
 
 
 async def gen_start_kb(q: Message or CallbackQuery):
+    """Generate keyboard with start menu options."""
     return ikb(
         [
             [
@@ -42,9 +43,20 @@ async def gen_start_kb(q: Message or CallbackQuery):
                 ),
             ],
             [("ʜᴇʟᴘ & ᴄᴏᴍᴍᴀɴᴅs", "commands")],
+            [
+                (
+                    "ᴅᴇᴠᴇʟᴏᴘᴇʀ",
+                    OWNER_ID,
+                    "user_id",
+                ),
+                (
+                    "sᴜᴘᴘᴏʀᴛ",
+                    f"https://t.me/MehHridoy",
+                    "url",
+                ),
+            ],
         ],
-)
-
+  )
 async def get_private_note(c: Nikki, m: Message, help_option: str):
     """Get the note in pm of user, with parsing enabled."""
     help_lst = help_option.split("_")
