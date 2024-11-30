@@ -5,8 +5,7 @@ from traceback import format_exc
 from pyrogram.errors import RPCError
 from pyrogram.types import CallbackQuery, Message
 
-from Powers import (HELP_COMMANDS, LOGGER, OWNER_ID,
-                    SUPPORT_GROUP, SUPPORT_CHANNEL)
+from Powers import HELP_COMMANDS, LOGGER, OWNER_ID, SUPPORT_GROUP
 from Powers.bot_class import Nikki
 from Powers.database.chats_db import Chats
 from Powers.database.notes_db import Notes
@@ -20,6 +19,7 @@ from Powers.utils.string import (build_keyboard,
 # Initialize
 notes_db = Notes()
 
+
 async def gen_cmds_kb(m: Message or CallbackQuery):
     """Generate the keyboard"""
     if isinstance(m, CallbackQuery):
@@ -28,10 +28,11 @@ async def gen_cmds_kb(m: Message or CallbackQuery):
     cmds = sorted(list(HELP_COMMANDS.keys()))
     kb = [cmd.lower() for cmd in cmds]
 
-    return [kb[i : i + 3] for i in range(0, len(kb), 3)]
+    return [kb[i: i + 3] for i in range(0, len(kb), 3)]
 
 
 async def gen_start_kb(q: Message or CallbackQuery):
+    """Generate keyboard with start menu options."""
     return ikb(
         [
             [
@@ -42,8 +43,20 @@ async def gen_start_kb(q: Message or CallbackQuery):
                 ),
             ],
             [("ʜᴇʟᴘ & ᴄᴏᴍᴍᴀɴᴅs", "commands")],
+            [
+                (
+                    "🥀 ᴅᴇᴠᴇʟᴏᴘᴇʀ 🥀",
+                    OWNER_ID,
+                    "user_id",
+                ),
+                (
+                    "✨ sᴜᴘᴘᴏʀᴛ ✨",
+                    f"https://t.me/{SUPPORT_GROUP}",
+                    "url",
+                ),
+            ],
         ],
-)
+  )
 
 async def get_private_note(c: Nikki, m: Message, help_option: str):
     """Get the note in pm of user, with parsing enabled."""
@@ -128,10 +141,10 @@ async def get_private_note(c: Nikki, m: Message, help_option: str):
             await m.reply_text(teks, quote=True, disable_web_page_preview=True)
             return
     elif msgtype in (
-        Types.STICKER,
-        Types.VIDEO_NOTE,
-        Types.CONTACT,
-        Types.ANIMATED_STICKER,
+            Types.STICKER,
+            Types.VIDEO_NOTE,
+            Types.CONTACT,
+            Types.ANIMATED_STICKER,
     ):
         await (await send_cmd(c, msgtype))(m.chat.id, getnotes["fileid"])
     else:
@@ -167,9 +180,6 @@ async def get_private_note(c: Nikki, m: Message, help_option: str):
                 getnotes["fileid"],
                 caption=teks,
             )
-    LOGGER.info(
-        f"{m.from_user.id} fetched privatenote {note_hash} (type - {getnotes}) in {m.chat.id}",
-    )
     return
 
 
@@ -198,7 +208,7 @@ async def get_private_rules(_, m: Message, help_option: str):
     return ""
 
 
-async def get_help_msg(m: Message or CallbackQuery, help_option: str):
+async def get_help_msg(c: Nikki, m: Message or CallbackQuery, help_option: str):
     """Helper function for getting help_msg and it's keyboard."""
     help_msg = None
     help_kb = None
@@ -222,14 +232,9 @@ async def get_help_msg(m: Message or CallbackQuery, help_option: str):
         )
         help_kb = ikb(ou, True, "commands")
         help_msg = f"**{(help_option_value)}:**"
-        LOGGER.info(
-            f"{m.from_user.id} fetched help for {help_option} in {m.chat.id}",
-        )
+
     else:
-        if isinstance(m,CallbackQuery):
-            mes = m.message
-        else:
-            mes = m
+        mes = m.message if isinstance(m, CallbackQuery) else m
         help_msg = f"""
 ʜᴇʏ {m.from_user.first_name}!
 
