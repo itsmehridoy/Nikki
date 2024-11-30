@@ -84,7 +84,7 @@ async def lock_perm(c: Nikki, m: Message):
         await prevent_approved(m)
         return
 
-    if lock_type == "msg":
+    if lock_type == ["msg", "text"]:
         msg = False
         perm = "messages"
 
