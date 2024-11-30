@@ -6,34 +6,27 @@ from pyrogram.types import (CallbackQuery, ChatPermissions,
                             InlineKeyboardButton, InlineKeyboardMarkup,
                             Message)
 
-from Powers import LOGGER, TIME_ZONE
+from Powers import TIME_ZONE
 from Powers.bot_class import Nikki
 from Powers.database.rules_db import Rules
 from Powers.database.users_db import Users
 from Powers.database.warns_db import Warns, WarnSettings
+from Powers.supports import get_support_staff
 from Powers.utils.caching import ADMIN_CACHE, admin_cache_reload
 from Powers.utils.extract_user import extract_user
 from Powers.utils.parser import mention_html
+
 
 @Nikki.on_cmd(["warn", "swarn", "dwarn"], group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_restrict_members", is_both=True)
 async def warn(c: Nikki, m: Message):
     if m.reply_to_message:
         r_id = m.reply_to_message.id
-        if len(m.text.split()) >= 2:
-            reason = m.text.split(None, 1)[1]
-        else:
-            reason = None
-    elif not m.reply_to_message:
-        r_id = m.id
-        if len(m.text.split()) >= 3:
-            reason = m.text.split(None, 2)[2]
-        else:
-            reason = None
+        reason = m.text.split(None, 1)[1] if len(m.text.split()) >= 2 else None
     else:
-        reason = None
-
-    if not len(m.command) > 1 and not m.reply_to_message:
+        r_id = m.id
+        reason = m.text.split(None, 2)[2] if len(m.text.split()) >= 3 else None
+    if len(m.command) <= 1 and not m.reply_to_message:
         await m.reply_text("I can't warn nothing! Tell me user whom I should warn")
         return
 
@@ -41,6 +34,13 @@ async def warn(c: Nikki, m: Message):
 
     if user_id == Nikki.id:
         await m.reply_text("Huh, why would I warn myself?")
+        return
+
+    SUPPORT_STAFF = get_support_staff()
+    if user_id in SUPPORT_STAFF:
+        await m.reply_text(
+            text="This user is in my support staff, cannot restrict them."
+        )
         return
 
     try:
@@ -59,40 +59,50 @@ async def warn(c: Nikki, m: Message):
     warn_settings = warn_settings_db.get_warnings_settings()
     if num >= warn_settings["warn_limit"]:
         timeee = datetime.now(TIME_ZONE) + timedelta(minutes=45)
-        if warn_settings["warn_mode"] == "kick":
+        if warn_settings["warn_mode"] == "kick" or warn_settings[
+            "warn_mode"
+        ] not in ["ban", "mute"]:
             await m.chat.ban_member(user_id, until_date=timeee)
             action = "kicked"
         elif warn_settings["warn_mode"] == "ban":
             await m.chat.ban_member(user_id)
             action = "banned"
-        elif warn_settings["warn_mode"] == "mute":
+        else:
             await m.chat.restrict_member(user_id, ChatPermissions())
             action = "muted"
-        else:
-            await m.chat.ban_member(user_id, until_date=timeee)
-            action = "kicked"
         await m.reply_text(
             (
                 f"Warnings {num}/{warn_settings['warn_limit']}!"
-                f"\n<b>Reason:</b>\n{reason}"
+                f"\n<b>Reason for last warn</b>:\n{reason}"
                 if reason
                 else "\n"
-                f"User {(await mention_html(user_first_name, user_id))} has been <b>{action}!</b>"
+                     f"{(await mention_html(user_first_name, user_id))} has been <b>{action}!</b>"
             ),
             reply_to_message_id=r_id,
         )
         await m.stop_propagation()
 
-    if m.text.split()[0] in ["/swarn", "!swarn"]:
+    if rules := Rules(m.chat.id).get_rules():
+        kb = InlineKeyboardButton(
+            "Rules 📋",
+            url=f"https://t.me/{c.me.username}?start=rules_{m.chat.id}",
+        )
+    else:
+        kb = InlineKeyboardButton(
+            "Kick ⚠️",
+            callback_data=f"warn.kick.{user_id}",
+        )
+
+    if m.text.split()[0] == "/swarn":
         await m.delete()
         await m.stop_propagation()
-    if m.text.split()[0] in ["/dwarn", "!dwarn"]:
+    if m.text.split()[0] == "/dwarn":
         if not m.reply_to_message:
             await m.reply_text("Reply to a message to delete it and ban the user!")
             await m.stop_propagation()
         await m.reply_to_message.delete()
-    txt = f"User {(await mention_html(user_first_name, user_id))} has {num}/{warn_settings['warn_limit']} warnings; be careful!"
-    txt += f"\n<b>Reason:</b> {reason}" if reason else ""
+    txt = f"{(await mention_html(user_first_name, user_id))} has {num}/{warn_settings['warn_limit']} warnings!"
+    txt += f"\n<b>Reason for last warn</b>:\n{reason}" if reason else ""
     await m.reply_text(
         txt,
         reply_markup=InlineKeyboardMarkup(
@@ -103,24 +113,32 @@ async def warn(c: Nikki, m: Message):
                         callback_data=f"warn.remove.{user_id}",
                     ),
                 ]
+                + [kb],
             ],
         ),
         reply_to_message_id=r_id,
     )
     await m.stop_propagation()
 
+
 @Nikki.on_cmd(["resetwarns", "resetwarn"], group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_restrict_members", is_both=True)
 async def reset_warn(c: Nikki, m: Message):
-
-    if not len(m.command) > 1 and not m.reply_to_message:
-        await m.reply_text("I don't know who you're talking about, you're going to need to specify a user...!")
+    if len(m.command) <= 1 and not m.reply_to_message:
+        await m.reply_text("I can't warn nothing! Tell me user whom I should warn")
         return
 
     user_id, user_first_name, _ = await extract_user(c, m)
 
-    if user_id == Nikki.id:
+    if user_id == c.me.id:
         await m.reply_text("Huh, why would I warn myself?")
+        return
+
+    SUPPORT_STAFF = get_support_staff()
+    if user_id in SUPPORT_STAFF:
+        await m.reply_text(
+            "They are support users, cannot be restriced, how am I then supposed to unrestrict them?",
+        )
         return
 
     try:
@@ -139,13 +157,19 @@ async def reset_warn(c: Nikki, m: Message):
     )
     return
 
+
 @Nikki.on_cmd("warns", group_only=True)
 async def list_warns(c: Nikki, m: Message):
-
+async def list_warns(c: Nikki, m: Message):
     user_id, user_first_name, _ = await extract_user(c, m)
 
     if user_id == Nikki.id:
         await m.reply_text("Huh, why would I warn myself?")
+        return
+
+    SUPPORT_STAFF = get_support_staff()
+    if user_id in SUPPORT_STAFF:
+        await m.reply_text("This user has no warns!")
         return
 
     try:
@@ -166,16 +190,16 @@ async def list_warns(c: Nikki, m: Message):
     if not warns:
         await m.reply_text("This user has no warns!")
         return
-    msg = f"{(await mention_html(user_first_name,user_id))} has <b>{num_warns}/{warn_settings['warn_limit']}</b> warns!\n\n<b>Reasons:</b>\n"
+    msg = f"{(await mention_html(user_first_name, user_id))} has <b>{num_warns}/{warn_settings['warn_limit']}</b> warns!\n\n<b>Reasons:</b>\n"
     msg += "\n".join([("- No reason" if i is None else f" - {i}") for i in warns])
     await m.reply_text(msg)
     return
 
+
 @Nikki.on_cmd(["rmwarn", "removewarn"], group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_restrict_members", is_both=True)
 async def remove_warn(c: Nikki, m: Message):
-
-    if not len(m.command) > 1 and not m.reply_to_message:
+    if len(m.command) <= 1 and not m.reply_to_message:
         await m.reply_text(
             "I can't remove warns of nothing! Tell me user whose warn should be removed!",
         )
@@ -185,6 +209,11 @@ async def remove_warn(c: Nikki, m: Message):
 
     if user_id == Nikki.id:
         await m.reply_text("Huh, why would I warn myself?")
+        return
+
+    SUPPORT_STAFF = get_support_staff()
+    if user_id in SUPPORT_STAFF:
+        await m.reply_text("This user has no warns!")
         return
 
     try:
@@ -207,32 +236,50 @@ async def remove_warn(c: Nikki, m: Message):
     _, num_warns = warn_db.remove_warn(user_id)
     await m.reply_text(
         (
-            f"{(await mention_html(user_first_name,user_id))} now has <b>{num_warns}</b> warnings!\n"
+            f"{(await mention_html(user_first_name, user_id))} now has <b>{num_warns}</b> warnings!\n"
             "Their last warn was removed."
         ),
     )
     return
 
-@Nikki.on_callback_query(filters.regex("^warn."))
-async def remove_last_warn_btn(c: Nikki, q: CallbackQuery):
 
+@Gojo.on_callback_query(filters.regex("^warn."))
+async def remove_last_warn_btn(c: Gojo, q: CallbackQuery):
     try:
         admins_group = {i[0] for i in ADMIN_CACHE[q.message.chat.id]}
     except KeyError:
         admins_group = {i[0] for i in (await admin_cache_reload(q, "warn_btn"))}
 
     if q.from_user.id not in admins_group:
-        await q.answer("You need to be an admin to do this.", show_alert=True)
+        await q.answer("You are not allowed to use this!", show_alert=True)
         return
 
     args = q.data.split(".")
     action = args[1]
     user_id = int(args[2])
     chat_id = int(q.message.chat.id)
-    user = Users.get_user_info(int(user_id))
+    user = Users.get_user_info(user_id)
     user_first_name = user["name"]
 
-    if action == "remove":
+    if action == "kick":
+        try:
+            timee = datetime.now(TIME_ZONE) + timedelta(minutes=45)
+            await c.ban_chat_member(chat_id, user_id, until_date=timee)
+            await q.message.edit_text(
+                (
+                    f"Admin {(await mention_html(q.from_user.first_name, q.from_user.id))} "
+                    "kicked user they can't join the chat for 45 minutes"
+                    f"{(await mention_html(user_first_name, user_id))} for last warning!"
+                ),
+            )
+            warn_db = Warns(q.message.chat.id)
+            warn_db.reset_warns(user_id)
+        except RPCError as err:
+            await q.message.edit_text(
+                f"🛑 Failed to Kick\n<b>Error:</b>\n</code>{err}</code>",
+            )
+
+    elif action == "remove":
         warn_db = Warns(q.message.chat.id)
         _, num_warns = warn_db.remove_warn(user_id)
         await q.message.edit_text(
@@ -243,24 +290,9 @@ async def remove_last_warn_btn(c: Nikki, q: CallbackQuery):
                 f"<b>Current Warnings:</b> {num_warns}"
             ),
         )
-    if action == "kick":
-        try:
-            timee = timeee = datetime.now(TIME_ZONE) + timedelta(minutes=45)
-            await c.ban_chat_member(chat_id, user_id, until_date=timee)
-            await q.message.edit_text(
-                (
-                    f"Admin {(await mention_html(q.from_user.first_name, q.from_user.id))} "
-                    "kicked user "
-                    f"{(await mention_html(user_first_name, user_id))} for last warning!"
-                ),
-            )
-        except RPCError as err:
-            await q.message.edit_text(
-                f"🛑 Failed to Kick\n<b>Error:</b>\n</code>{err}</code>",
-            )
-
     await q.answer()
     return
+
 
 @Nikki.on_cmd(["warnings", "warnsettings"], group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_restrict_members", is_both=True)
@@ -275,6 +307,7 @@ async def get_settings(_, m: Message):
         ),
     )
     return
+
 
 @Nikki.on_cmd("warnmode", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_restrict_members", is_both=True)
@@ -297,6 +330,7 @@ async def warnmode(_, m: Message):
     await m.reply_text(f"This chats current Warn Mode is: {warnmode_var}")
     return
 
+
 @Nikki.on_cmd("warnlimit", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_restrict_members", is_both=True)
 async def warnlimit(_, m: Message):
@@ -312,6 +346,7 @@ async def warnlimit(_, m: Message):
     warnlimit_var = warn_settings_db.get_warnlimit()
     await m.reply_text(f"This chats current Warn Limit is: {warnlimit_var}")
     return
+
 
 __PLUGIN__ = "Wᴀʀɴs"
 
