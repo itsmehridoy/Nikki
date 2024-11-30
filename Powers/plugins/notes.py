@@ -265,7 +265,7 @@ async def hash_get(c: Nikki, m: Message):
 
 
 @Nikki.on_cmd("get", group_only=True)
-async def get_note(c: Nikki, m: Message)
+async def get_note(c: Nikki, m: Message):
     if len(m.text.split()) == 2:
         priv_notes_status = db_settings.get_privatenotes(m.chat.id)
         note = ((m.text.split())[1]).lower()
