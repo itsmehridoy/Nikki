@@ -45,7 +45,7 @@ async def purge(c: Nikki, m: Message):
 
         count_del_msg = len(message_ids)
 
-        z = await m.reply_text(text=f"Deleted <i>{count_del_msg}</i> messages")
+        z = await m.reply_text(text=f"ᴅᴇʟᴇᴛᴇᴅ {count_del_msg} ᴍᴇssᴀɢᴇs!")
         await sleep(3)
         await z.delete()
         return
