@@ -22,8 +22,6 @@ from pyrogram.errors import (
 )
 from pyrogram.enums import ChatMembersFilter
 from Config import Config
-from git import Repo
-from git.exc import GitCommandError, InvalidGitRepositoryError
 from extras.formatters import alpha_to_int
 from Powers.bot_class import Nikki
 from Powers.database import get_served_chats, get_served_users
@@ -31,7 +29,7 @@ from Powers.database import MongoDB
 from Powers.database.chats_db import Chats
 from Powers import LOGGER, MESSAGE_DUMP, UPTIME
 from Powers.plugins.utils import clean_my_db
-from Powers.misc import HAPP, XCB, SUDOERS
+from Powers.misc import SUDOERS
 from Powers.utils.pastebin import AnonyBin
 from Powers.utils.clean_file import remove_markdown_and_html
 from Powers.utils.parser import mention_markdown
@@ -276,91 +274,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 async def is_heroku():
     return "heroku" in socket.getfqdn()
-
-@Nikki.on_message(command("logs") & SUDOERS)
-async def log_(client, message):
-    try:
-        if await is_heroku():
-            if HAPP is None:
-                return await message.reply_text("ᴘʟᴇᴀsᴇ ᴍᴀᴋᴇ sᴜʀᴇ ʏᴏᴜʀ **ʜᴇʀᴏᴋᴜ ᴀᴘɪ ᴋᴇʏ**, ʏᴏᴜʀ **ᴀᴘᴘ ɴᴀᴍᴇ** ᴀʀᴇ ᴄᴏɴꜰɪɢᴜʀᴇᴅ ᴄᴏʀʀᴇᴄᴛʟʏ ɪɴ ʜᴇʀᴏᴋᴜ ʙᴀʙʏ")
-            data = HAPP.get_log()
-            link = await AnonyBin(data)
-            return await message.reply_text(link)
-        else:
-            if os.path.exists(Config.LOG_FILE_NAME):
-                log = open(Config.LOG_FILE_NAME)
-                lines = log.readlines()
-                data = ""
-                try:
-                    NUMB = int(message.text.split(None, 1)[1])
-                except:
-                    NUMB = 100
-                for x in lines[-NUMB:]:
-                    data += x
-                link = await AnonyBin(data)
-                return await message.reply_text(link)
-            else:
-                return await message.reply_text("ʏᴏᴜ ᴄᴀɴ ᴏɴʟʏ ɢᴇᴛ ʟᴏɢs ᴏꜰ ʜᴇʀᴏᴋᴜ ᴀᴘᴘs.")
-    except Exception as e:
-        print(e)
-        await message.reply_text("ʏᴏᴜ ᴄᴀɴ ᴏɴʟʏ ɢᴇᴛ ʟᴏɢs ᴏꜰ ʜᴇʀᴏᴋᴜ ᴀᴘᴘs.")
-
-
-@Nikki.on_message(command("update") & SUDOERS)
-async def update_(client, message):
-    if await is_heroku():
-        if HAPP is None:
-            return await message.reply_text("ᴘʟᴇᴀsᴇ ᴍᴀᴋᴇ sᴜʀᴇ ᴛʜᴀᴛ ʏᴏᴜʀ ʜᴇʀᴏᴋᴜ ᴀᴘɪ ᴋᴇʏ ᴀɴᴅ ᴀᴘᴘ ɴᴀᴍᴇ ᴀʀᴇ ᴄᴏɴғɪɢᴜʀᴇᴅ ᴄᴏʀʀᴇᴄᴛʟʏ.")
-    response = await message.reply_text("ᴄʜᴇᴄᴋɪɴɢ ꜰᴏʀ ᴀᴠᴀɪʟᴀʙʟᴇ ᴜᴘᴅᴀᴛᴇs...")
-    try:
-        repo = Repo()
-    except GitCommandError:
-        return await response.edit("ɢɪᴛ ᴄᴏᴍᴍᴀɴᴅ ᴇʀʀᴏʀ.")
-    except InvalidGitRepositoryError:
-        return await response.edit("ɪɴᴠᴀʟɪᴅ ɢɪᴛ ʀᴇᴘsɪᴛᴏʀʏ.")
-    to_exc = f"git fetch origin {Config.UPSTREAM_BRANCH} &> /dev/null"
-    os.system(to_exc)
-    await asyncio.sleep(7)
-    verification = ""
-    REPO_ = repo.remotes.origin.url.split(".git")[0]
-    for checks in repo.iter_commits(f"HEAD..origin/{Config.UPSTREAM_BRANCH}"):
-        verification = str(checks.count())
-    if verification == "":
-        return await response.edit("» ʙᴏᴛ ɪs ᴜᴘ-ᴛᴏ-ᴅᴀᴛᴇ.")
-    updates = ""
-    ordinal = lambda format: "%d%s" % (
-        format,
-        "tsnrhtdd"[(format // 10 % 10 != 1) * (format % 10 < 4) * format % 10 :: 4],
-    )
-    for info in repo.iter_commits(f"HEAD..origin/{Config.UPSTREAM_BRANCH}"):
-        updates += f"<b>➣ #{info.count()}: <a href={REPO_}/commit/{info}>{info.summary}</a> ʙʏ -> {info.author}</b>\n\t\t\t\t<b>➥ ᴄᴏᴍᴍɪᴛᴇᴅ ᴏɴ :</b> {ordinal(int(datetime.fromtimestamp(info.committed_date).strftime('%d')))} {datetime.fromtimestamp(info.committed_date).strftime('%b')}, {datetime.fromtimestamp(info.committed_date).strftime('%Y')}\n\n"
-    _update_response_ = "<b>ᴀ ɴᴇᴡ ᴜᴩᴅᴀᴛᴇ ɪs ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜᴇ ʙᴏᴛ !</b>\n\n➣ ᴩᴜsʜɪɴɢ ᴜᴩᴅᴀᴛᴇs ɴᴏᴡ\n\n<b><u>ᴜᴩᴅᴀᴛᴇs:</u></b>\n\n"
-    _final_updates_ = _update_response_ + updates
-    if len(_final_updates_) > 4096:
-        url = await AnonyBin(updates)
-        nrs = await response.edit(
-            f"<b>ᴀ ɴᴇᴡ ᴜᴩᴅᴀᴛᴇ ɪs ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜᴇ ʙᴏᴛ !</b>\n\n➣ ᴩᴜsʜɪɴɢ ᴜᴩᴅᴀᴛᴇs ɴᴏᴡ\n\n<u><b>ᴜᴩᴅᴀᴛᴇs :</b></u>\n\n<a href={url}>ᴄʜᴇᴄᴋ ᴜᴩᴅᴀᴛᴇs</a>"
-        )
-    else:
-        nrs = await response.edit(_final_updates_, disable_web_page_preview=True)
-    os.system("git stash &> /dev/null && git pull")
-
-    if await is_heroku():
-        try:
-            os.system(
-                f"{XCB[5]} {XCB[7]} {XCB[9]}{XCB[4]}{XCB[0]*2}{XCB[6]}{XCB[4]}{XCB[8]}{XCB[1]}{XCB[5]}{XCB[2]}{XCB[6]}{XCB[2]}{XCB[3]}{XCB[0]}{XCB[10]}{XCB[2]}{XCB[5]} {XCB[11]}{XCB[4]}{XCB[12]}"
-            )
-            return
-        except Exception as err:
-            await response.edit(f"{nrs.text}\n\n{'sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ, ᴩʟᴇᴀsᴇ ᴄʜᴇᴄᴋ ʟᴏɢs.'}")
-            return await app.send_message(
-                chat_id=Config.MESSAGE_DUMP,
-                text="ᴀɴ ᴇxᴄᴇᴩᴛɪᴏɴ ᴏᴄᴄᴜʀᴇᴅ ᴀᴛ #ᴜᴩᴅᴀᴛᴇʀ ᴅᴜᴇ ᴛᴏ : **{0}**".format(err),
-            )
-    else:
-        os.system("pip3 install -r requirements.txt")
-        os.system(f"kill -9 {os.getpid()} && bash start")
-        exit()
 
 @Nikki.on_message(command("restart") & SUDOERS)
 async def restart_(_, message):
