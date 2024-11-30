@@ -4,6 +4,9 @@ from Config import Config
 from time import time
 from importlib import import_module as imp_mod
 
+from telethon import TelegramClient
+from telethon.sessions import MemorySession
+
 logging.basicConfig(
     format="[%(asctime)s - %(levelname)s] - %(name)s - %(message)s",
     datefmt="%d-%b-%y %H:%M:%S",
@@ -11,6 +14,7 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
+logging.getLogger("telethon").setLevel(logging.ERROR)
 LOGGER = logging.getLogger(__name__)
 
 TIME_ZONE = pytz.timezone(Config.TIME_ZONE)
@@ -27,6 +31,15 @@ NO_LOAD = Config.NO_LOAD
 HELP_COMMANDS = {}
 UPTIME = time()
 SUPPORT_USERS = {"Owner": [Config.OWNER_ID], "Dev": set(Config.DEV_USERS), "Sudo": set(Config.SUDO_USERS), "White": set(Config.WHITELIST_USERS)}
+
+
+
+
+
+
+
+
+
 
 async def load_cmds(all_plugins):
     """Loads all the plugins in bot."""
