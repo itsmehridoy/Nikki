@@ -13,6 +13,7 @@ from html import escape
 from urllib.parse import quote, unquote
 from requests import request
 from pyshorteners import Shortener
+from pyrogram import filters
 from pyrogram.errors import BadRequest, UserNotParticipant, FloodWait
 from pyrogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                             Message, CallbackQuery)
