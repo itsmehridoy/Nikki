@@ -434,7 +434,7 @@ async def unlock_perm(c: Nikki, m: Message):
     return
 
 
-async def delete_messages(c: Gojo, m: Message):
+async def delete_messages(c: Nikki, m: Message):
     try:
         await m.delete()
         return
