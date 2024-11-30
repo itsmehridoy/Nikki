@@ -1,5 +1,4 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from telegram import ParseMode
 from telethon import *
 from telethon.tl.types import ChatBannedRights
 
