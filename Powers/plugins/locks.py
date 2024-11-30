@@ -84,7 +84,7 @@ async def lock_perm(c: Nikki, m: Message):
         await prevent_approved(m)
         return
 
-    if lock_type == ["msg", "text"]:
+    if lock_type in ["msg", "text"]:
         msg = False
         perm = "messages"
 
@@ -310,7 +310,7 @@ async def unlock_perm(c: Nikki, m: Message):
     upin = get_uperm.can_pin_messages
     ustickers = uanimations = ugames = uinlinebots = None
 
-    if unlock_type == "msg":
+    if unlock_type in ["msg", "text"]:
         umsg = True
         uperm = "messages"
 
