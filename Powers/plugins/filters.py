@@ -6,7 +6,7 @@ from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus as CMS
 from pyrogram.enums import ParseMode as PM
 from pyrogram.errors import RPCError
-from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, Message
+from pyrogram.types import CallbackQuery, Message
 
 from Powers.bot_class import LOGGER, Nikki
 from Powers.database.filters_db import Filters
@@ -19,7 +19,9 @@ from Powers.utils.string import (build_keyboard,
                                  escape_mentions_using_curly_brackets,
                                  parse_button, split_quotes)
 
+# Initialise
 db = Filters()
+
 
 @Nikki.on_cmd("filters", group_only=True, self_admin=True)
 async def view_filters(_, m: Message):
@@ -40,19 +42,10 @@ async def view_filters(_, m: Message):
     return await m.reply_text(filters_chat, disable_web_page_preview=True)
 
 
-#from pyrogram.types import Types
-from pyrogram.errors.exceptions.bad_request_400 import MessageEmpty
-
 @Nikki.on_cmd("filter", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_change_info", is_both=True)
 async def add_filter(_, m: Message):
-
-    try:
-        args = m.text.split(" ", 1)
-    except MessageEmpty:
-        await m.reply_text("Message is empty.")
-        return
-
+    args = m.text.split(" ", 1)
     all_filters = db.get_all_filters(m.chat.id)
     actual_filters = {j for i in all_filters for j in i.split("|")}
 
@@ -71,9 +64,9 @@ async def add_filter(_, m: Message):
     extracted = await split_quotes(args[1])
     keyword = extracted[0].lower()
 
-    for k in keyword.split("|"):
-        if k in actual_filters:
-            return await m.reply_text(f"Filter <code>{k}</code> already exists!")
+    # for k in keyword.split("|"):
+    #     if k in actual_filters:
+    #         return await m.reply_text(f"Filter <code>{k}</code> already exists!")
 
     if not keyword:
         return await m.reply_text(
@@ -102,19 +95,19 @@ async def add_filter(_, m: Message):
             "Please provide data for this filter reply with!",
         )
 
-    add = db.save_filter(m.chat.id, keyword, teks, msgtype, file_id)
-    if add:
+    if add := db.save_filter(m.chat.id, keyword, teks, msgtype, file_id):
         await m.reply_text(
             f"Saved filter for '<code>{', '.join(keyword.split('|'))}</code>' in <b>{m.chat.title}</b>!",
         )
-    return
+    await m.stop_propagation()
+
 
 @Nikki.on_cmd("stop", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_change_info", is_both=True)
 async def stop_filter(_, m: Message):
     args = m.command
 
-    if len(args) < 1:
+    if len(args) <= 1:
         return await m.reply_text("What should I stop replying to?")
 
     chat_filters = db.get_all_filters(m.chat.id)
@@ -129,27 +122,26 @@ async def stop_filter(_, m: Message):
             await m.reply_text(
                 f"Okay, I'll stop replying to that filter and it's aliases in <b>{m.chat.title}</b>.",
             )
-            return
+            await m.stop_propagation()
 
     await m.reply_text(
         "That's not a filter - Click: /filters to get currently active filters.",
     )
-    return
+    await m.stop_propagation()
 
 
 @Nikki.on_cmd(["stopall", "stopallfilters"], group_only=True, self_admin=True)
 @Nikki.adminsOnly(only_owner=True)
 async def rm_allfilters(_, m: Message):
-    all_bls = db.get_all_filters(m.chat.id)
-    if not all_bls:
+    if all_bls := db.get_all_filters(m.chat.id):
+        return await m.reply_text(
+            "Are you sure you want to clear all filters?",
+            reply_markup=ikb(
+                [[("Confirm", "rm_allfilters"), ("❌ Cancel", "close_admin")]],
+            ),
+        )
+    else:
         return await m.reply_text("No filters to stop in this chat.")
-
-    return await m.reply_text(
-        "Are you sure you want to clear all filters?",
-        reply_markup=ikb(
-            [[("Confirm", "rm_allfilters"), ("Cancel!", "close_admin")]],
-        ),
-    )
 
 
 @Nikki.on_cb("rm_allfilters")
@@ -242,10 +234,10 @@ async def send_filter_reply(c: Nikki, m: Message, trigger: str):
                 return
 
         elif msgtype in (
-            Types.STICKER,
-            Types.VIDEO_NOTE,
-            Types.CONTACT,
-            Types.ANIMATED_STICKER,
+                Types.STICKER,
+                Types.VIDEO_NOTE,
+                Types.CONTACT,
+                Types.ANIMATED_STICKER,
         ):
             await (await send_cmd(c, msgtype))(
                 m.chat.id,
@@ -271,7 +263,6 @@ async def send_filter_reply(c: Nikki, m: Message, trigger: str):
 
 @Nikki.on_message(filters.text & filters.group & ~filters.bot, group=69)
 async def filters_watcher(c: Nikki, m: Message):
-
     chat_filters = db.get_all_filters(m.chat.id)
     actual_filters = {j for i in chat_filters for j in i.split("|")}
 
@@ -281,7 +272,6 @@ async def filters_watcher(c: Nikki, m: Message):
         if match:
             try:
                 msgtype = await send_filter_reply(c, m, trigger)
-                LOGGER.info(f"Replied with {msgtype} to {trigger} in {m.chat.id}")
             except Exception as ef:
                 await m.reply_text(f"Error: {ef}")
                 LOGGER.error(ef)
@@ -289,6 +279,7 @@ async def filters_watcher(c: Nikki, m: Message):
             break
         continue
     return
+
 
 __PLUGIN__ = "Fɪʟᴛᴇʀs"
 
