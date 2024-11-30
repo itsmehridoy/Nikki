@@ -295,7 +295,8 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                     )
                 )
             except PeerIdInvalid:
-                return await prog_msg.edit_msg("It looks like you've never interacted with me in private chat, you need to do that first.."),
+                return await prog_msg.edit_msg(
+                    "It looks like you've never interacted with me in private chat, you need to do that first..",
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
@@ -305,7 +306,7 @@ async def kang_sticker(self: Client, ctx: Message, strings):
                                 )
                             ]
                         ]
-                    ),
+                    )
                 )
 
     except BadRequest:
