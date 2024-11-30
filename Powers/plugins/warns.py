@@ -11,7 +11,7 @@ from Powers.bot_class import Nikki
 from Powers.database.rules_db import Rules
 from Powers.database.users_db import Users
 from Powers.database.warns_db import Warns, WarnSettings
-from Powers.supports import get_support_staff
+from Powers.misc import get_support_staff
 from Powers.utils.caching import ADMIN_CACHE, admin_cache_reload
 from Powers.utils.extract_user import extract_user
 from Powers.utils.parser import mention_html
