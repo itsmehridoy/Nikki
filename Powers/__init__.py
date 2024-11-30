@@ -31,14 +31,8 @@ NO_LOAD = Config.NO_LOAD
 HELP_COMMANDS = {}
 UPTIME = time()
 SUPPORT_USERS = {"Owner": [Config.OWNER_ID], "Dev": set(Config.DEV_USERS), "Sudo": set(Config.SUDO_USERS), "White": set(Config.WHITELIST_USERS)}
-
-
-
-
-
-
-
-
+# telethon
+telethn = TelegramClient(MemorySession(), API_ID, API_HASH)
 
 
 async def load_cmds(all_plugins):
