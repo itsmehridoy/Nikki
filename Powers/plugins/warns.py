@@ -160,7 +160,6 @@ async def reset_warn(c: Nikki, m: Message):
 
 @Nikki.on_cmd("warns", group_only=True)
 async def list_warns(c: Nikki, m: Message):
-async def list_warns(c: Nikki, m: Message):
     user_id, user_first_name, _ = await extract_user(c, m)
 
     if user_id == Nikki.id:
@@ -243,8 +242,8 @@ async def remove_warn(c: Nikki, m: Message):
     return
 
 
-@Gojo.on_callback_query(filters.regex("^warn."))
-async def remove_last_warn_btn(c: Gojo, q: CallbackQuery):
+@Nikki.on_callback_query(filters.regex("^warn."))
+async def remove_last_warn_btn(c: Nikki, q: CallbackQuery):
     try:
         admins_group = {i[0] for i in ADMIN_CACHE[q.message.chat.id]}
     except KeyError:
