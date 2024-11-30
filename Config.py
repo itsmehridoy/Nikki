@@ -2,7 +2,7 @@ import os
 
 class Config:
     LOGGER = True
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6264941380:AAECsJYLeSJhG99AkFPjKNpV6tfvOfp1wkg")
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "8109009407:AAENj5yb2E8Kt7Geuqc4y2q9i8BvcfeiPYc")
     API_ID = int(os.environ.get("API_ID", 28412950))
     API_HASH = os.environ.get("API_HASH", "0bfda840b5f2ea2f4053ba6d8813d351")
     OWNER_ID = int(os.environ.get("OWNER_ID", 6213690669))
