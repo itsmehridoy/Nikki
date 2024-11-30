@@ -1,6 +1,3 @@
-import socket
-import heroku3
-
 import Powers
 from Config import Config
 from Powers import OWNER_ID, SUPPORT_USERS
@@ -57,37 +54,3 @@ async def cache_support():
     SUPPORT_USERS["Dev"] = SUPPORT_USERS["Dev"].union(devs)
     SUPPORT_USERS["Sudo"] = SUPPORT_USERS["Sudo"].union(sudo)
     return
-############
-
-def is_heroku():
-    return "heroku" in socket.getfqdn()
-
-
-XCB = [
-    "/",
-    "@",
-    ".",
-    "com",
-    ":",
-    "git",
-    "heroku",
-    "push",
-    str(Config.HEROKU_API_KEY),
-    "https",
-    str(Config.HEROKU_APP_NAME),
-    "HEAD",
-    "master",
-]
-
-def heroku():
-    global HAPP
-    if is_heroku:
-        if Config.HEROKU_API_KEY and Config.HEROKU_APP_NAME:
-            try:
-                Heroku = heroku3.from_key(Config.HEROKU_API_KEY)
-                HAPP = Heroku.app(Config.HEROKU_APP_NAME)
-                LOGGER.info(f"Heroku App Configured")
-            except BaseException:
-                LOGGER.warning(
-                    f"Please make sure your Heroku API Key and Your App name are configured correctly in the heroku."
-                )
