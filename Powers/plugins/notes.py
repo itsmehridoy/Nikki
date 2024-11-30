@@ -4,7 +4,7 @@ from traceback import format_exc
 from pyrogram import enums, filters
 from pyrogram.enums import ChatMemberStatus as CMS
 from pyrogram.errors import RPCError
-from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, Message
+from pyrogram.types import CallbackQuery, Message
 
 from Powers import LOGGER
 from Powers.bot_class import Nikki
@@ -15,8 +15,11 @@ from Powers.utils.msg_types import Types, get_note_type
 from Powers.utils.string import (build_keyboard,
                                  escape_mentions_using_curly_brackets,
                                  parse_button)
+
+# Initialise
 db = Notes()
 db_settings = NotesSettings()
+
 
 @Nikki.on_cmd("save", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_change_info", is_both=True)
@@ -56,7 +59,6 @@ async def save_note(_, m: Message):
         return
 
     db.save_note(m.chat.id, note_name, text, data_type, content)
-    LOGGER.info(f"{m.from_user.id} saved note ({note_name}) in {m.chat.id}")
     await m.reply_text(
         f"Saved note <code>{note_name}</code>!\nGet it with <code>/get {note_name}</code> or <code>#{note_name}</code>",
     )
@@ -71,7 +73,6 @@ async def get_note_func(c: Nikki, m: Message, note_name, priv_notes_status):
         return
 
     if priv_notes_status:
-
         note_hash = next(i[1] for i in db.get_all_notes(m.chat.id) if i[0] == note_name)
         await reply_text(
             f"Click on the button to get the note <code>{note_name}</code>",
@@ -148,10 +149,10 @@ async def get_note_func(c: Nikki, m: Message, note_name, priv_notes_status):
                 )
                 return
         elif msgtype in (
-            Types.STICKER,
-            Types.VIDEO_NOTE,
-            Types.CONTACT,
-            Types.ANIMATED_STICKER,
+                Types.STICKER,
+                Types.VIDEO_NOTE,
+                Types.CONTACT,
+                Types.ANIMATED_STICKER,
         ):
             await (await send_cmd(c, msgtype))(
                 m.chat.id,
@@ -190,9 +191,7 @@ async def get_note_func(c: Nikki, m: Message, note_name, priv_notes_status):
                 reply_markup=button,
                 reply_to_message_id=reply_msg_id,
             )
-        LOGGER.info(
-            f"{m.from_user.id} fetched note {note_name} (type - {getnotes}) in {m.chat.id}",
-        )
+
     except Exception as e:
         await m.reply_text(f"Error in notes: {e}")
     return
@@ -222,10 +221,10 @@ async def get_raw_note(c: Nikki, m: Message, note: str):
             teks, parse_mode=enums.ParseMode.DISABLED, reply_to_message_id=msg_id
         )
     elif msgtype in (
-        Types.STICKER,
-        Types.VIDEO_NOTE,
-        Types.CONTACT,
-        Types.ANIMATED_STICKER,
+            Types.STICKER,
+            Types.VIDEO_NOTE,
+            Types.CONTACT,
+            Types.ANIMATED_STICKER,
     ):
         await (await send_cmd(c, msgtype))(
             m.chat.id,
@@ -241,14 +240,14 @@ async def get_raw_note(c: Nikki, m: Message, note: str):
             parse_mode=enums.ParseMode.DISABLED,
             reply_to_message_id=msg_id,
         )
-    LOGGER.info(
-        f"{m.from_user.id} fetched raw note {note} (type - {getnotes}) in {m.chat.id}",
-    )
+
     return
 
 
 @Nikki.on_message(filters.regex(r"^#[^\s]+") & filters.group & ~filters.bot)
 async def hash_get(c: Nikki, m: Message):
+    # If not from user, then return
+
     try:
         note = (m.text[1:]).lower()
     except TypeError:
@@ -257,6 +256,7 @@ async def hash_get(c: Nikki, m: Message):
     all_notes = {i[0] for i in db.get_all_notes(m.chat.id)}
 
     if note not in all_notes:
+        # don't reply to all messages starting with #
         return
 
     priv_notes_status = db_settings.get_privatenotes(m.chat.id)
@@ -265,38 +265,39 @@ async def hash_get(c: Nikki, m: Message):
 
 
 @Nikki.on_cmd("get", group_only=True)
-async def get_note(c: Nikki, m: Message):
+async def get_note(c: Nikki, m: Message)
     if len(m.text.split()) == 2:
         priv_notes_status = db_settings.get_privatenotes(m.chat.id)
         note = ((m.text.split())[1]).lower()
         all_notes = {i[0] for i in db.get_all_notes(m.chat.id)}
 
         if note not in all_notes:
-            await m.reply_text("Note not found.")
+            await m.reply_text("This note does not exists!")
             return
+
         await get_note_func(c, m, note, priv_notes_status)
     elif len(m.text.split()) == 3 and (m.text.split())[2] in ["noformat", "raw"]:
         note = ((m.text.split())[1]).lower()
         await get_raw_note(c, m, note)
     else:
-        await m.reply_text("Not enough arguments!")
+        await m.reply_text("Give me a note tag!")
         return
+
     return
 
 
 @Nikki.on_cmd(["privatenotes", "pmnotes"], group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_change_info", is_both=True)
 async def priv_notes(_, m: Message):
-
     chat_id = m.chat.id
     if len(m.text.split()) == 2:
         option = (m.text.split())[1]
         if option in ("on", "yes"):
             db_settings.set_privatenotes(chat_id, True)
-            msg = "Nikki will now send a message to your chat with a button redirecting to PM, where the user will receive the note."
+            msg = "Set private notes to On"
         elif option in ("off", "no"):
             db_settings.set_privatenotes(chat_id, False)
-            msg = "Nikki will now send notes straight to the group."
+            msg = "Set private notes to Off"
         else:
             msg = "Enter correct option"
         await m.reply_text(msg)
@@ -305,29 +306,27 @@ async def priv_notes(_, m: Message):
         msg = msg = f"Private Notes: {curr_pref}"
         await m.reply_text(msg)
     else:
-        await m.replt_text("Tap here to view all notes in this chat.")
+        await m.replt_text("Check help on how to use this command!")
 
     return
 
 
 @Nikki.on_cmd(["notes", "saved"], group_only=True)
-async def local_notes(_, m: Message):
+async def local_notes(c: Nikki, m: Message):
     getnotes = db.get_all_notes(m.chat.id)
 
     if not getnotes:
-        await m.reply_text(f"No notes in <b>{m.chat.title}</b>.")
+        await m.reply_text(f"There are no notes in <b>{m.chat.title}</b>.")
         return
 
     msg_id = m.reply_to_message.id if m.reply_to_message else m.id
 
-    curr_pref = db_settings.get_privatenotes(m.chat.id)
-    if curr_pref:
-
+    if curr_pref := db_settings.get_privatenotes(m.chat.id):
         pm_kb = ikb(
             [
                 [
                     (
-                        "Click me!",
+                        "All Notes",
                         f"https://t.me/{Nikki.username}?start=notes_{m.chat.id}",
                         "url",
                     ),
@@ -335,7 +334,7 @@ async def local_notes(_, m: Message):
             ],
         )
         await m.reply_text(
-            "Tap here to view all notes in this chat.",
+            "Click on the button below to get notes!",
             quote=True,
             reply_markup=pm_kb,
         )
@@ -353,14 +352,12 @@ async def local_notes(_, m: Message):
 @Nikki.on_cmd("clear", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_change_info", is_both=True)
 async def clear_note(_, m: Message):
-
     if len(m.text.split()) <= 1:
         await m.reply_text("What do you want to clear?")
         return
 
     note = m.text.split()[1].lower()
     getnote = db.rm_note(m.chat.id, note)
-    LOGGER.info(f"{m.from_user.id} cleared note ({note}) in {m.chat.id}")
     if not getnote:
         await m.reply_text("This note does not exist!")
         return
@@ -372,7 +369,6 @@ async def clear_note(_, m: Message):
 @Nikki.on_cmd("clearall", group_only=True)
 @Nikki.adminsOnly(only_owner=True)
 async def clear_allnote(_, m: Message):
-
     all_notes = {i[0] for i in db.get_all_notes(m.chat.id)}
     if not all_notes:
         await m.reply_text("No notes are there in this chat")
