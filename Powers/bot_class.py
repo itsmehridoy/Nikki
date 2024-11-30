@@ -52,7 +52,5 @@ class Anony(Client):
         await super().stop()
         MongoDB.close()
         LOGGER.info("Bot Stopped.")
-
-git()
-heroku()
+      
 Nikki = Anony()
