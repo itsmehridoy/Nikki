@@ -5,7 +5,7 @@ import shutil
 import tempfile
 
 from PIL import Image
-from pyrogram import Client, emoji, enums
+from pyrogram import Client, emoji, enums, filters
 from pyrogram.errors import BadRequest, PeerIdInvalid, StickersetInvalid
 from pyrogram.file_id import FileId
 from pyrogram.raw.functions.messages import GetStickerSet, SendMedia
@@ -23,8 +23,9 @@ from pyrogram.raw.types import (
 )
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
+from Powers.bot_class import Nikki as app
+from Powers.misc import fetch
 from Powers import MESSAGE_DUMP
-from Powers.bot_class import Nikki
 
 def get_emoji_regex():
     e_list = [
@@ -32,15 +33,20 @@ def get_emoji_regex():
         for e in dir(emoji)
         if not e.startswith("_")
     ]
+    # to avoid re.error excluding char that start with '*'
     e_sort = sorted([x for x in e_list if not x.startswith("*")], reverse=True)
+    # Sort emojis by length to make sure multi-character emojis are
+    # matched first
     pattern_ = f"({'|'.join(e_sort)})"
     return re.compile(pattern_)
+
 
 EMOJI_PATTERN = get_emoji_regex()
 SUPPORTED_TYPES = ["jpeg", "png", "webp"]
 
-@Nikki.on_cmd("getsticker")
-async def getsticker_(self: Client, ctx: Message):
+
+@app.on_message(filters.command(["getsticker", "toimage"]))
+async def getsticker_(self: Client, ctx: Message, strings):
     if not ctx.reply_to_message:
         return await ctx.reply_msg("Please reply to a sticker for me to upload its PNG.")
     sticker = ctx.reply_to_message.sticker
@@ -50,40 +56,37 @@ async def getsticker_(self: Client, ctx: Message):
         return await ctx.reply_msg("Animated stickers are not supported.")
     with tempfile.TemporaryDirectory() as tempdir:
         path = os.path.join(tempdir, "getsticker")
-        sticker_file = await self.download_media(
-            message=ctx.reply_to_message,
-            file_name=f"{path}/{sticker.set_name}.png",
-        )
-        await ctx.reply_to_message.reply_document(
-            document=sticker_file,
-            caption=f"<b>Emoji:</b> {sticker.emoji}\n"
-            f"<b>Sticker ID:</b> <code>{sticker.file_id}</code>\n\n"
-            f"<b>Send by:</b> @{self.me.username}",
-        )
+    sticker_file = await self.download_media(
+        message=ctx.reply_to_message,
+        file_name=f"{path}/{sticker.set_name}.png",
+    )
+    await ctx.reply_to_message.reply_document(
+        document=sticker_file,
+        caption=f"<b>Emoji:</b> {sticker.emoji}\n"
+        f"<b>Sticker ID:</b> <code>{sticker.file_id}</code>\n\n"
+        f"<b>Send by:</b> @{self.me.username}",
+    )
     shutil.rmtree(tempdir, ignore_errors=True)
 
-@Nikki.on_cmd("stickerid")
+
+@app.on_message(filters.command("stickerid") & filters.reply)
 async def getstickerid(_, ctx: Message):
-    if ctx.reply_to_message and ctx.reply_to_message.sticker:
+    if ctx.reply_to_message.sticker:
         await ctx.reply_msg(
             "The ID of this sticker is: <code>{stickerid}</code>".format(
                 stickerid=ctx.reply_to_message.sticker.file_id
             )
         )
-    else:
-        await ctx.reply_text("Please reply to a sticker to get its ID.")
 
-@Nikki.on_cmd(["unkang", "delsticker"])
-async def unkangs(self: Client, ctx: Message):
+
+@app.on_message(filters.command("unkang") & filters.reply)
+async def unkangs(self: Client, ctx: Message, strings):
     if not ctx.from_user:
-        return await ctx.reply("You're anonymous; un-kang in my PM.")
-
-    if ctx.reply_to_message and ctx.reply_to_message.sticker:
-        sticker = ctx.reply_to_message.sticker
+        return await ctx.reply("You're anon, unkang in my PM")
+    if sticker := ctx.reply_to_message.sticker:
         if str(ctx.from_user.id) not in sticker.set_name:
-            return await ctx.reply("This sticker is not from your pack; please don't un-kang it.")
-        
-        pp = await ctx.reply("Unkanging the sticker...")
+            return await ctx.reply_msg("This sticker is not your pack, don't do it..")
+        pp = await ctx.reply_msg("Unkanging the sticker...")
         try:
             decoded = FileId.decode(sticker.file_id)
             sticker = InputDocument(
@@ -91,20 +94,19 @@ async def unkangs(self: Client, ctx: Message):
                 access_hash=decoded.access_hash,
                 file_reference=decoded.file_reference,
             )
-            await Nikki.invoke(RemoveStickerFromSet(sticker=sticker))
-            await pp.edit("Unkanging successful.")
+            await app.invoke(RemoveStickerFromSet(sticker=sticker))
+            await pp.edit_msg("Unkanging successful.")
         except Exception as e:
-            await pp.edit(f"Unkanging error: {e}")
+            await pp.edit_msg(strings("unkang_error").format(e=e))
     else:
-        await ctx.reply("Please reply to a sticker from your sticker pack.")
+        await ctx.reply_msg(strings("unkang_help").format(c=self.me.username), del_in=6)
 
-@Nikki.on_cmd(["curi", "kang"])
-async def kang_sticker(self, ctx: Message):
+
+@app.on_cmd(["curi", "kang"])
+async def kang_sticker(self: Client, ctx: Message, strings):
     if not ctx.from_user:
-        return await ctx.reply("You need to use this command in a chat.", delete_in=6)
-
-    prog_msg = await ctx.reply("Kanging the sticker...")
-
+        return await ctx.reply_msg(strings("anon_warn"), del_in=6)
+    prog_msg = await ctx.reply_msg(strings("kang_msg"))
     sticker_emoji = "🤔"
     packnum = 0
     packname_found = False
@@ -112,7 +114,6 @@ async def kang_sticker(self, ctx: Message):
     animated = False
     videos = False
     convert = False
-
     reply = ctx.reply_to_message
     user = await self.resolve_peer(ctx.from_user.username or ctx.from_user.id)
 
@@ -127,15 +128,21 @@ async def kang_sticker(self, ctx: Message):
             videos = True
         elif reply.document:
             if "image" in reply.document.mime_type:
+                # mime_type: image/webp
                 resize = True
-            elif reply.document.mime_type in ("video", "animation"):
+            elif reply.document.mime_type in (
+                enums.MessageMediaType.VIDEO,
+                enums.MessageMediaType.ANIMATION,
+            ):
+                # mime_type: application/video
                 videos = True
                 convert = True
             elif "tgsticker" in reply.document.mime_type:
+                # mime_type: application/x-tgsticker
                 animated = True
         elif reply.sticker:
             if not reply.sticker.file_name:
-                return await prog_msg.edit("The sticker has no name.")
+                return await prog_msg.edit_msg("The sticker has no name.")
             if reply.sticker.emoji:
                 sticker_emoji = reply.sticker.emoji
             animated = reply.sticker.is_animated
@@ -145,35 +152,76 @@ async def kang_sticker(self, ctx: Message):
             elif not reply.sticker.file_name.endswith(".tgs"):
                 resize = True
         else:
-            return await prog_msg.edit("Unsupported media type.")
+            return await prog_msg.edit_msg("I cannot kang this type.")
 
         pack_prefix = "anim" if animated else "vid" if videos else "a"
         packname = f"{pack_prefix}_{ctx.from_user.id}_by_{self.me.username}"
 
-        if len(ctx.command) > 1 and ctx.command[1].isdigit() and int(ctx.command[1]) > 0:
+        if (
+            len(ctx.command) > 1
+            and ctx.command[1].isdigit()
+            and int(ctx.command[1]) > 0
+        ):
+            # provide pack number to kang in desired pack
             packnum = ctx.command.pop(1)
-            packname = f"{pack_prefix}{packnum}_{ctx.from_user.id}_by_{self.me.username}"
-
+            packname = (
+                f"{pack_prefix}{packnum}_{ctx.from_user.id}_by_{self.me.username}"
+            )
         if len(ctx.command) > 1:
-            sticker_emoji = "".join(set(EMOJI_PATTERN.findall("".join(ctx.command[1:]))) or sticker_emoji)
-
+            # matches all valid emojis in input
+            sticker_emoji = (
+                "".join(set(EMOJI_PATTERN.findall("".join(ctx.command[1:]))))
+                or sticker_emoji
+            )
         filename = await self.download_media(ctx.reply_to_message)
         if not filename:
+            # Failed to download
             await prog_msg.delete()
             return
-    else:
-        return await prog_msg.edit("You need to reply to a sticker or provide a valid image URL.")
+    elif ctx.entities and len(ctx.entities) > 1:
+        pack_prefix = "a"
+        filename = "sticker.png"
+        packname = f"c{ctx.from_user.id}_by_{self.me.username}"
+        img_url = next(
+            (
+                ctx.text[y.offset : (y.offset + y.length)]
+                for y in ctx.entities
+                if y.type == "url"
+            ),
+            None,
+        )
 
+        if not img_url:
+            await prog_msg.delete()
+            return
+        try:
+            r = await fetch.get(img_url)
+            if r.status_code == 200:
+                with open(filename, mode="wb") as f:
+                    f.write(r.read())
+        except Exception as r_e:
+            return await prog_msg.edit_msg(f"{r_e.__class__.__name__} : {r_e}")
+        if len(ctx.command) > 2:
+            # m.command[1] is image_url
+            if ctx.command[2].isdigit() and int(ctx.command[2]) > 0:
+                packnum = ctx.command.pop(2)
+                packname = f"a{packnum}_{ctx.from_user.id}_by_{self.me.username}"
+            if len(ctx.command) > 2:
+                sticker_emoji = (
+                    "".join(set(EMOJI_PATTERN.findall("".join(ctx.command[2:]))))
+                    or sticker_emoji
+                )
+            resize = True
+    else:
+        return await prog_msg.edit_msg(strings("kang_help"))
     try:
         if resize:
             filename = resize_image(filename)
         elif convert:
             filename = await convert_video(filename)
             if filename is False:
-                return await prog_msg.edit("Error", delete_in=6)
-
+                return await prog_msg.edit_msg("Error", del_in=6)
         max_stickers = 50 if animated else 120
-
         while not packname_found:
             try:
                 stickerset = await self.invoke(
@@ -189,7 +237,6 @@ async def kang_sticker(self, ctx: Message):
                     packname_found = True
             except StickersetInvalid:
                 break
-
         file = await self.save_file(filename)
         media = await self.invoke(
             SendMedia(
@@ -203,12 +250,10 @@ async def kang_sticker(self, ctx: Message):
                 random_id=self.rnd_id(),
             ),
         )
-
         msg_ = media.updates[-1].message
         stkr_file = msg_.media.document
-
         if packname_found:
-            await prog_msg.edit("Using existing sticker pack...")
+            await prog_msg.edit_msg(strings("exist_pack"))
             await self.invoke(
                 AddStickerToSet(
                     stickerset=InputStickerSetShortName(short_name=packname),
@@ -223,7 +268,7 @@ async def kang_sticker(self, ctx: Message):
                 )
             )
         else:
-            await prog_msg.edit("Creating a new pack and adding the sticker...")
+            await prog_msg.edit_msg(strings("new_packs"))
             stkr_title = f"{ctx.from_user.first_name}'s"
             if animated:
                 stkr_title += "AnimPack"
@@ -231,7 +276,6 @@ async def kang_sticker(self, ctx: Message):
                 stkr_title += "VidPack"
             if packnum != 0:
                 stkr_title += f" v{packnum}"
-
             try:
                 await self.invoke(
                     CreateStickerSet(
@@ -248,18 +292,16 @@ async def kang_sticker(self, ctx: Message):
                                 emoji=sticker_emoji,
                             )
                         ],
-                        animated=animated,
-                        videos=videos,
                     )
                 )
             except PeerIdInvalid:
-                return await prog_msg.edit(
-                    "To use this feature, please start a private chat with me.",
+                return await prog_msg.edit_msg(
+                    strings("please_start_msg"),
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
                                 InlineKeyboardButton(
-                                    "Start Chat",
+                                    strings("click_me"),
                                     url=f"https://t.me/{self.me.username}?start",
                                 )
                             ]
@@ -268,28 +310,33 @@ async def kang_sticker(self, ctx: Message):
                 )
 
     except BadRequest:
-        return await prog_msg.edit("Your Sticker Pack is full if your pack is not in v1 Type /kang 1, if it is not in v2 Type /kang 2 and so on.")
+        return await prog_msg.edit_msg(strings("pack_full"))
     except Exception as all_e:
-        await prog_msg.edit(f"{all_e.__class__.__name__} : {all_e}")
+        await prog_msg.edit_msg(f"{all_e.__class__.__name__} : {all_e}")
     else:
         markup = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        "View Pack",
+                        text=strings("viewpack"),
                         url=f"https://t.me/addstickers/{packname}",
                     )
                 ]
             ]
         )
-        await prog_msg.edit(f"Sticker added successfully. {sticker_emoji}", reply_markup=markup)
+        await prog_msg.edit_msg(
+            strings("kang_success").format(emot=sticker_emoji),
+            reply_markup=markup,
+        )
+        # Cleanup
         await self.delete_messages(
-            chat_id=MESSAGE_DUMP, message_ids=msg_.id, revoke=True
+            chat_id=LOG_CHANNEL, message_ids=msg_.id, revoke=True
         )
         try:
             os.remove(filename)
         except OSError:
             pass
+
 
 def resize_image(filename: str) -> str:
     im = Image.open(filename)
@@ -333,6 +380,7 @@ async def convert_video(filename: str) -> str:
     ]
 
     proc = await asyncio.create_subprocess_exec(*cmd)
+    # Wait for the subprocess to finish
     await proc.communicate()
 
     if webm_video != filename:
@@ -343,7 +391,6 @@ __PLUGIN__ = "Sᴛɪᴄᴋᴇʀ"
 __HELP__ = """
 **Dᴇsᴄʀɪᴘᴛɪᴏɴ :**
 ʜᴇʀᴇ sᴏᴍᴇ ᴇxᴛʀᴀ ᴄᴏᴍᴍᴀɴᴅ ғᴏʀ ᴛʜɪs ʙᴏᴛ.
-
 **Cᴏᴍᴍᴀɴᴅs :**
 • /stickerid : ʀᴇᴘʟʏ ᴛᴏ ᴀ ꜱᴛɪᴄᴋᴇʀ ᴛᴏ ᴍᴇ ᴛᴏ ᴛᴇʟʟ ʏᴏᴜ ɪᴛꜱ ғɪʟᴇ ɪᴅ.
 • /getsticker : ʀᴇᴘʟʏ ᴛᴏ ᴀ ꜱᴛɪᴄᴋᴇʀ ᴛᴏ ᴍᴇ ᴛᴏ ᴜᴘʟᴏᴀᴅ ɪᴛꜱ ʀᴀᴡ ᴘɴɢ ғɪʟᴇ.
