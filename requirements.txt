@@ -9,7 +9,7 @@ gitpython==3.1.41
 gpytranslate==1.5.1
 pymongo==4.6.1
 pytz==2024.1
-regex==2023.12.25
+regex==2024.11.6
 flask
 flask_restful
 requests==2.31.0
