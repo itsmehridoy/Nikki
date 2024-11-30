@@ -1,7 +1,7 @@
 from Powers import LOGGER
 from motor.motor_asyncio import AsyncIOMotorClient
 
-MONGO_DB_URI = "mongodb+srv://Mrs:Nikki@cluster0.nlh0bzz.mongodb.net/?retryWrites=true&w=majority"
+MONGO_DB_URI = "mongodb+srv://itsmehhridoy:56ctjKCdvmWLSrnn@cluster0.amhq7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 LOGGER.info("Connecting to your second Mongo Database...")
 try:
