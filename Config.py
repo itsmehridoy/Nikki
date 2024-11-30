@@ -10,6 +10,7 @@ class Config:
     DEV_USERS = os.environ.get("DEV_USERS", "6213690669")
     SUDO_USERS = os.environ.get("SUDO_USERS", "6213690669")
     WHITELIST_USERS = os.environ.get("WHITELIST_USERS", "6213690669")
+    SQLURL = os.environ.get("")
     DB_URI = os.environ.get("DB_URI", "mongodb+srv://GroupSentry:jT6MpjXATacUb2aU@cluster0.4nzkt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     DB_NAME = os.environ.get("DB_NAME", "NikkiDB")
     NO_LOAD = os.environ.get("NO_LOAD", "")
