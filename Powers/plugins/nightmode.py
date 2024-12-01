@@ -147,7 +147,7 @@ async def job_open():
                 )
             )
         except Exception as e:
-            logger.info(f"ᴜɴᴀʙʟᴇ ᴛᴏ ᴏᴘᴇɴ ɢʀᴏᴜᴘ {pro.chat_id} - {e}")
+            LOGGER.info(f"ᴜɴᴀʙʟᴇ ᴛᴏ ᴏᴘᴇɴ ɢʀᴏᴜᴘ {pro.chat_id} - {e}")
 
 
 # Run everyday at 06
