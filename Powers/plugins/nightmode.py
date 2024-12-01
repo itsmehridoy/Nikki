@@ -164,7 +164,7 @@ import os
 
 from telethon import types
 
-from Powers.bot_class import Nikki
+from Powers.bot_class import Nikki as Client
 
 TMP_DOWNLOAD_DIRECTORY = "./"
 
@@ -199,7 +199,7 @@ async def telegrap(event):
             downloaded_file_name = await Client.download_media(
                 reply_msg, TMP_DOWNLOAD_DIRECTORY
             )
-            a = await Nikki.get_me()
+            a = await Client.get_me()
             end = datetime.now()
             ms = (end - start).seconds
             if not downloaded_file_name:
