@@ -1,3 +1,5 @@
+import asyncio
+
 from telethon import Button, events, types
 from telethon.errors import ChatAdminRequiredError
 from telethon.errors.rpcerrorlist import UserNotParticipantError
