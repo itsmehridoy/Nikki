@@ -3,7 +3,6 @@ from telethon.errors import ChatAdminRequiredError
 from telethon.errors.rpcerrorlist import UserNotParticipantError
 from telethon.tl.functions.channels import GetParticipantRequest
 
-from Powers import OWNER_ID as DEVS
 from Powers import OWNER_ID
 from Powers.bot_class import Nikki
 from Powers import telethn as Rani
@@ -101,7 +100,6 @@ async def fsub_n(e):
         return
     if (
             await is_admin(e.chat_id, e.sender_id)
-            or e.sender_id in DEVS
             or e.sender_id == OWNER_ID
     ):
         return
