@@ -6,7 +6,7 @@ from telethon.tl.functions.channels import GetParticipantRequest
 from Powers import OWNER_ID as DEVS
 from Powers import OWNER_ID
 from Powers import telethn as Rani
-from Powers.events import Asuinline as Asuinline
+from Powers.events import Nikkiinline as Asuinline
 from Powers.events import register as Asubot
 from Powers.database import fsub_db as db
 
