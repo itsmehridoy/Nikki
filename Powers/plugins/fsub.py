@@ -5,6 +5,7 @@ from telethon.tl.functions.channels import GetParticipantRequest
 
 from Powers import OWNER_ID as DEVS
 from Powers import OWNER_ID
+from Powers.bot_class import Nikki
 from Powers import telethn as Rani
 from Powers.events import Nikkiinline as Asuinline
 from Powers.events import register as Asubot
@@ -77,7 +78,7 @@ async def fsub(event):
                 return await event.reply("ᴛʜᴀᴛ's ɴᴏᴛ ᴀ ᴠᴀʟɪᴅ ᴄʜᴀɴɴᴇʟ.")
         except Exception:
             return await event.reply("ᴛʜᴀᴛ's ɴᴏᴛ ᴀ ᴠᴀʟɪᴅ ᴄʜᴀɴɴᴇʟ.")
-        if not await participant_check(channel, BOT_ID):
+        if not await participant_check(channel, Nikki.id):
             return await event.reply(
                 f"❗**ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ**\nI ᴀᴍ ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴇ [ᴄʜᴀɴɴᴇʟ](https://t.me/{channel}). ᴀᴅᴅ ᴍᴇ ᴀs ᴀ ᴀᴅᴍɪɴ ɪɴ ᴏʀᴅᴇʀ ᴛᴏ ᴇɴᴀʙʟᴇ ғᴏʀᴄᴇsᴜʙsᴄʀɪʙᴇ.",
                 link_preview=False,
