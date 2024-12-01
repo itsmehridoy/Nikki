@@ -12,7 +12,7 @@ pytz==2024.1
 regex==2023.12.25
 requests==2.32.3
 tgcrypto==1.2.5
-ujson==5.9.0
+ujson==5.10.0
 urllib3==2.2.0
 motor[srv]==3.3.2
 python-dotenv==1.0.1
