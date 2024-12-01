@@ -27,3 +27,4 @@ git+https://github.com/KurimuzonAkuma/pyrogram.git
 SQLAlchemy==1.4.44
 telethon==1.35.0
 psycopg2==2.9.10
+telegraph==2.2.0
