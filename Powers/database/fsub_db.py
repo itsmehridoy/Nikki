@@ -1,4 +1,4 @@
-from . import AsuXdb as db
+from extras.mongo import db
 
 fsub = db.force_sub
 
