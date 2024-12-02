@@ -2,7 +2,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telethon import functions, types
 from telethon.tl.types import ChatBannedRights
 
-from Powers import telethn as tbot
+from Powers import LOGGER, telethn as tbot
 from Powers.events import register
 from Powers.database.sql.night_mode_sql import (
     add_nightmode,
@@ -115,7 +115,7 @@ async def job_close():
                 )
             )
         except Exception as e:
-            logger.info(f"Unable To Close Group {warner} - {e}")
+            LOGGER.info(f"Unable To Close Group {warner} - {e}")
 
 
 # Run everyday at 12am
@@ -140,7 +140,7 @@ async def job_open():
                 )
             )
         except Exception as e:
-            logger.info(f"Unable To Open Group {warner.chat_id} - {e}")
+            LOGGER.info(f"Unable To Open Group {warner.chat_id} - {e}")
 
 
 # Run everyday at 06
