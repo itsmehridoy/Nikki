@@ -269,12 +269,6 @@ async def cleeeen(c: Nikki,m:Message):
         LOGGER.error(format_exc())
         return
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-async def is_heroku():
-    return "heroku" in socket.getfqdn()
-
 @Nikki.on_message(command("restart") & SUDOERS)
 async def restart_(_, message):
     response = await message.reply_text("ʀᴇsᴛᴀʀᴛɪɴɢ...")
