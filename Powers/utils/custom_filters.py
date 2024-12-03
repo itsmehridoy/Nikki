@@ -15,7 +15,7 @@ from Powers.database.approve_db import Approve
 from Powers.database.captcha_db import CAPTCHA
 from Powers.database.disable_db import Disabling
 from Powers.database.flood_db import Floods
-from Powers.supports import get_support_staff
+from Powers.misc import get_support_staff
 from Powers.utils.caching import ADMIN_CACHE, admin_cache_reload
 
 
