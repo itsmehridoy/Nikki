@@ -11,7 +11,6 @@ from pyrogram.types import CallbackQuery, ChatJoinRequest, Message
 
 from Powers import OWNER_ID, PREFIX_HANDLER
 from Powers.bot_class import Nikki
-from Powers.database.afk_db import AFK
 from Powers.database.approve_db import Approve
 from Powers.database.autojoin_db import AUTOJOIN
 from Powers.database.captcha_db import CAPTCHA
@@ -314,33 +313,6 @@ async def auto_join_check_filter(_, __, j: ChatJoinRequest):
 
     return bool(join_type)
 
-
-async def afk_check_filter(_, __, m: Message):
-    if not m.from_user:
-        return False
-
-    if m.from_user.is_bot:
-        return False
-
-    if m.chat.type == ChatType.PRIVATE:
-        return False
-
-    afk = AFK()
-    chat = m.chat.id
-    is_repl_afk = None
-    if m.reply_to_message:
-        if repl_user := m.reply_to_message.from_user:
-            repl_user = m.reply_to_message.from_user.id
-            is_repl_afk = afk.check_afk(chat, repl_user)
-            return bool(is_repl_afk)
-
-    user = m.from_user.id
-
-    is_afk = afk.check_afk(chat, user)
-
-    return bool(is_afk)
-
-
 async def flood_check_filter(_, __, m: Message):
     Flood = Floods()
     if not m.chat:
@@ -388,7 +360,6 @@ async def captcha_filt(_, __, m: Message):
 
 captcha_filter = create(captcha_filt)
 flood_filter = create(flood_check_filter)
-afk_filter = create(afk_check_filter)
 auto_join_filter = create(auto_join_check_filter)
 admin_filter = create(admin_check_func)
 owner_filter = create(owner_check_func)
