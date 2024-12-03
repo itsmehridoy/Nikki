@@ -12,7 +12,6 @@ from pyrogram.types import CallbackQuery, ChatJoinRequest, Message
 from Powers import OWNER_ID, PREFIX_HANDLER
 from Powers.bot_class import Nikki
 from Powers.database.approve_db import Approve
-from Powers.database.autojoin_db import AUTOJOIN
 from Powers.database.captcha_db import CAPTCHA
 from Powers.database.disable_db import Disabling
 from Powers.database.flood_db import Floods
@@ -305,14 +304,6 @@ async def can_pin_message_func(_, __, m):
 
     return status
 
-
-async def auto_join_check_filter(_, __, j: ChatJoinRequest):
-    chat = j.chat.id
-    aj = AUTOJOIN()
-    join_type = aj.get_autojoin(chat)
-
-    return bool(join_type)
-
 async def flood_check_filter(_, __, m: Message):
     Flood = Floods()
     if not m.chat:
@@ -360,7 +351,6 @@ async def captcha_filt(_, __, m: Message):
 
 captcha_filter = create(captcha_filt)
 flood_filter = create(flood_check_filter)
-auto_join_filter = create(auto_join_check_filter)
 admin_filter = create(admin_check_func)
 owner_filter = create(owner_check_func)
 restrict_filter = create(restrict_check_func)
