@@ -21,7 +21,7 @@ pyfiglet==1.0.2
 pyshorteners==1.0.1
 heroku3==5.2.1
 Abg
-git+https://github.com/KurimuzonAkuma/pyrogram.git
+git+https://github.com/Mayuri-Chan/pyrofork.git
 SQLAlchemy==1.4.44
 telethon==1.35.0
 psycopg2==2.9.10
