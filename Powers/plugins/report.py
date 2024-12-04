@@ -15,10 +15,6 @@ async def tag_admins(_, m: Message):
     if m.chat.type == "private":
         await m.reply_text("This command is only for use in supergroups.")
         return
-
-    if not m.reply_to_message:
-        await m.reply_text("Please reply to a message you want to report.")
-        return
     
     db = Reporting(m.chat.id)
     if not db.get_settings():
