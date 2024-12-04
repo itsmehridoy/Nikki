@@ -14,12 +14,10 @@ from Powers.utils.parser import mention_html
 async def tag_admins(_, m: Message):
     if m.chat.type == "private":
         await m.reply_text("This command is only for use in supergroups.")
-        return
-    
+        return    
     db = Reporting(m.chat.id)
     if not db.get_settings():
-        return
-    
+        return    
     try:
         admin_list = ADMIN_CACHE.get(m.chat.id)  # Use .get() to avoid KeyError
         if admin_list is None:
@@ -33,7 +31,7 @@ async def tag_admins(_, m: Message):
     mention_str = "".join(mention_users)
     
     await m.reply_text(
-        f"{await mention_html(m.from_user.first_name, m.from_user.id)} reported the message to admins!{mention_str}"
+        f"{await mention_html(m.from_user.first_name, m.from_user.id)} ʀᴇᴘᴏʀᴛᴇᴅ ᴛʜᴇ ᴍᴇssᴀɢᴇ ᴛᴏ ᴀᴅᴍɪɴs!{mention_str}"
     )
 
 @Nikki.on_cmd("reports", group_only=True, self_admin=True)
@@ -98,9 +96,9 @@ async def report_watcher(c: Nikki, m: Message):
             
         if m.chat.username:
             msg = (
-                f"<b> • Report: </b>{m.chat.title}\n"
-                f"<b> • Report by:</b> {await mention_html(m.from_user.first_name, m.from_user.id)} (<code>{m.from_user.id}</code>)\n"
-                f"<b> • Reported user:</b> {await mention_html(reported_user.first_name, reported_user.id)} (<code>{reported_user.id}</code>)\n"
+                f"<b> • ʀᴇᴘᴏʀᴛ: </b>{m.chat.title}\n"
+                f"<b> • ʀᴇᴘᴏʀᴛ ʙʏ:</b> {await mention_html(m.from_user.first_name, m.from_user.id)} (<code>{m.from_user.id}</code>)\n"
+                f"<b> • ʀᴇᴘᴏʀᴛᴇᴅ ᴜsᴇʀ:</b> {await mention_html(reported_user.first_name, reported_user.id)} (<code>{reported_user.id}</code>)\n"
             )
 
         else:
