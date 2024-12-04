@@ -147,3 +147,21 @@ async def job_open():
 scheduler = AsyncIOScheduler(timezone="Asia/Dhaka")
 scheduler.add_job(job_open, trigger="cron", hour=6, minute=1)
 scheduler.start()
+
+__PLUGIN__ = "Aᴅᴍɪɴs"
+__alt_name__ = [
+    "nightmode",
+    "rmnight",
+]
+
+__HELP__ = """
+**Dᴇsᴄʀɪᴘᴛɪᴏɴ :**
+Tʜᴇ Cᴏᴍᴍᴀɴᴅs Aᴅᴍɪɴs Cᴀɴ Usᴇ Fᴏʀ Mᴀɴᴀɢᴇ A Gʀᴏᴜᴘ
+────────────────────────
+
+**Tʜᴇ Fᴏʟʟᴏᴡɪɴɢ Cᴏᴍᴍᴀɴᴅs Aʀᴇ Aᴅᴍɪɴ Oɴʟʏ :**
+๏ /nightmode*:* ᴀᴅᴅs ɢʀᴏᴜᴘ ᴛᴏ ɴɪɢʜᴛᴍᴏᴅᴇ ᴄʜᴀᴛs.
+๏ /rmnight*:* ʀᴇᴍᴏᴠᴇs ɢʀᴏᴜᴘ ғʀᴏᴍ ɴɪɢʜᴛᴍᴏᴅᴇ ᴄʜᴀᴛs.
+
+**Nᴏᴛᴇ:** ɴɪɢʜᴛ ᴍᴏᴅᴇ ᴄʜᴀᴛs ɢᴇᴛ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴄʟᴏsᴇᴅ ᴀᴛ 𝟷𝟸 ᴀᴍ(IST) ᴀɴᴅ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴏᴘᴇɴɴᴇᴅ ᴀᴛ 𝟼 ᴀᴍ(IST) ᴛᴏ ᴘʀᴇᴠᴇɴᴛ ɴɪɢʜᴛ sᴘᴀᴍs.
+"""
