@@ -148,7 +148,7 @@ scheduler = AsyncIOScheduler(timezone="Asia/Dhaka")
 scheduler.add_job(job_open, trigger="cron", hour=6, minute=1)
 scheduler.start()
 
-__PLUGIN__ = "Aᴅᴍɪɴs"
+__PLUGIN__ = "Nɪɢʜᴛᴍᴏᴅᴇ"
 __alt_name__ = [
     "nightmode",
     "rmnight",
