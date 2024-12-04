@@ -164,6 +164,99 @@ async def demote_usr(c: Nikki, m: Message):
         LOGGER.error(format_exc())
     return
 
+@Nikki.on_cmd("fullpromote", group_only=True)
+@Nikki.adminsOnly(only_owner=True)
+async def fullpromote_usr(c: Nikki, m: Message):
+    global ADMIN_CACHE
+    if len(m.text.split()) == 1 and not m.reply_to_message:
+        await m.reply_text(
+            text="I can't promote nothing! Give me an username or user id or atleast reply to that user"
+        )
+        return
+    try:
+        user_id, user_first_name, user_name = await extract_user(c, m)
+    except Exception:
+        return
+    bot = await c.get_chat_member(m.chat.id, c.me.id)
+    if user_id == c.me.id:
+        await m.reply_text("Huh, how can I even promote myself?")
+        return
+    if not bot.privileges.can_promote_members:
+        return await m.reply_text(
+            "I don't have enough permissions!",
+        )  # This should be here
+    user = await c.get_chat_member(m.chat.id, m.from_user.id)
+    if m.from_user.id != OWNER_ID and user.status != CMS.OWNER:
+        return await m.reply_text("This command can only be used by chat owner.")
+    # If user is alreay admin
+    try:
+        admin_list = {i[0] for i in ADMIN_CACHE[m.chat.id]}
+    except KeyError:
+        admin_list = {
+            i[0] for i in (await admin_cache_reload(m, "promote_cache_update"))
+        }
+    if user_id in admin_list:
+        await m.reply_text(
+            "This user is already an admin, how am I supposed to re-promote them?",
+        )
+        return
+    try:
+        await m.chat.promote_member(user_id=user_id, privileges=bot.privileges)
+        title = ""
+        if m.chat.type in [ChatType.SUPERGROUP, ChatType.GROUP]:
+            title = "Admin"  # Default fullpromote title
+            if len(m.text.split()) == 3 and not m.reply_to_message:
+                title = " ".join(m.text.split()[2:16])  # trim title to 16 characters
+            elif len(m.text.split()) >= 2 and m.reply_to_message:
+                title = " ".join(m.text.split()[1:16])  # trim title to 16 characters
+
+            try:
+                await c.set_administrator_title(m.chat.id, user_id, title)
+            except RPCError as e:
+                LOGGER.error(e)
+                LOGGER.error(format_exc())
+            except Exception as e:
+                LOGGER.error(e)
+                LOGGER.error(format_exc())
+        await m.reply_text(
+            (
+                "{promoter} promoted {promoted} in chat <b>{chat_title}</b> with full rights!"
+            ).format(
+                promoter=(await mention_html(m.from_user.first_name, m.from_user.id)),
+                promoted=(await mention_html(user_first_name, user_id)),
+                chat_title=f"{escape(m.chat.title)} title set to {title}"
+                if title
+                else f"{escape(m.chat.title)} title set to Default",
+            ),
+        )
+        # If user is approved, disapprove them as they willbe promoted and get
+        # even more rights
+        if Approve(m.chat.id).check_approve(user_id):
+            Approve(m.chat.id).remove_approve(user_id)
+        # ----- Add admin to temp cache -----
+        try:
+            inp1 = user_name or user_first_name
+            admins_group = ADMIN_CACHE[m.chat.id]
+            admins_group.append((user_id, inp1))
+            ADMIN_CACHE[m.chat.id] = admins_group
+        except KeyError:
+            await admin_cache_reload(m, "promote_key_error")
+    except ChatAdminRequired:
+        await m.reply_text(text="I'm not admin or I don't have rights......")
+    except RightForbidden:
+        await m.reply_text(text="I don't have enough rights to promote this user.")
+    except UserAdminInvalid:
+        await m.reply_text(
+            text="Cannot act on this user, maybe I wasn't the one who changed their permissions."
+        )
+    except RPCError as e:
+        await m.reply_text(
+            text=f"Some error occured, report it using `/bug` \n <b>Error:</b> <code>{e}</code>"
+        )
+        LOGGER.error(e)
+        LOGGER.error(format_exc())
+    return
+
 @Nikki.on_cmd("promote", group_only=True, self_admin=True)
 @Nikki.adminsOnly(permissions="can_promote_members", is_both=True)
 async def promote_usr(c: Nikki, m: Message):
@@ -212,7 +305,7 @@ async def promote_usr(c: Nikki, m: Message):
         )
         title = ""
         if m.chat.type in [ChatType.SUPERGROUP, ChatType.GROUP]:
-            title = "Itadori"  # Deafult title
+            title = "Admin"  # Deafult title
             if len(m.text.split()) >= 3 and not m.reply_to_message:
                 title = " ".join(m.text.split()[2:16]) # trim title to 16 characters
             elif len(m.text.split()) >= 2 and m.reply_to_message:
