@@ -1,5 +1,5 @@
-import Powers
-
+from asyncio import gather
+from httpx import AsyncClient, Timeout
 from pyrogram.filters import user
 
 from Config import Config
@@ -57,9 +57,6 @@ async def cache_support():
     SUPPORT_USERS["Dev"] = SUPPORT_USERS["Dev"].union(devs)
     SUPPORT_USERS["Sudo"] = SUPPORT_USERS["Sudo"].union(sudo)
     return
-###########
-from asyncio import gather
-from httpx import AsyncClient, Timeout
 
 # HTTPx Async Client
 fetch = AsyncClient(
