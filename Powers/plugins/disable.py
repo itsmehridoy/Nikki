@@ -125,19 +125,19 @@ async def rm_alldisbl(_, m: Message):
     return
 
 
-@app.on_cb("enableallcmds")
+@Nikki.on_cb("enableallcmds")
 async def enablealll(_, q: CallbackQuery):
     user_id = q.from_user.id
     user_status = (await q.message.chat.get_member(user_id)).status
     if user_status not in {CMS.OWNER, CMS.ADMINISTRATOR}:
         await q.answer(
-            "You're not even an admin, don't try this explosive shit!",
+            "You need to be an admin to do this.",
             show_alert=True,
         )
         return
     if user_status != CMS.OWNER:
         await q.answer(
-            "You're just an admin, not owner\nStay in your limits!",
+            f"You need to be the chat owner of {q.message.chat.title} to do this.",
             show_alert=True,
         )
         return
