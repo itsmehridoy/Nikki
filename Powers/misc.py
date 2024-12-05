@@ -2,7 +2,6 @@ from asyncio import gather
 from httpx import AsyncClient, Timeout
 from pyrogram.filters import user
 
-from Config import Config
 from Powers import OWNER_ID, SUPPORT_USERS
 from Powers.database.support_db import SUPPORTS
 
@@ -51,7 +50,6 @@ def get_support_staff(want="all"):
 async def cache_support():
     support = SUPPORTS()
     dev = support.get_particular_support("dev")
-    dev.extend([6213690669, 5995620537, int(OWNER_ID)])
     devs = set(dev)
     sudo = set(support.get_particular_support("sudo"))
     SUPPORT_USERS["Dev"] = SUPPORT_USERS["Dev"].union(devs)
