@@ -311,16 +311,24 @@ def calc_btn(uid):
     return CALCULATE_BUTTONS
 
 
+from pyrogram import Client, filters
+
 @Nikki.on_cmd(["calc", "calculate", "calculator"])
 async def calculate_handler(self, ctx):
     if not ctx.from_user:
         return
-    await ctx.reply_text(
-        text=f"Made by @{self.me.username}",
-        reply_markup=calc_btn(ctx.from_user.id),
-        disable_web_page_preview=True,
-        quote=True,
-    )
+
+    # Send the reply text with a button markup
+    try:
+        # Sending a reply with a custom button markup
+        await ctx.reply_text(
+            text=f"Made by @{self.me.username}",
+            reply_markup=calc_btn(ctx.from_user.id),
+            disable_web_page_preview=True,
+            quote=True,
+        )
+    except Exception as e:
+        print(f"Error while sending message: {e}")
 
 @Nikki.on_callback_query(filters.regex("^calc"))
 async def calc_cb(self, query):
