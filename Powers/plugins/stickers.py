@@ -247,9 +247,7 @@ async def kang_sticker(self, ctx: Message):
                                 ),
                                 emoji=sticker_emoji,
                             )
-                        ],
-                        animated=animated,
-                        videos=videos,
+                        ]
                     )
                 )
             except PeerIdInvalid:
@@ -298,13 +296,11 @@ def resize_image(filename: str) -> str:
     sizenew = (int(im.width * scale), int(im.height * scale))
     im = im.resize(sizenew, Image.NEAREST)
     downpath, f_name = os.path.split(filename)
-    # not hardcoding png_image as "sticker.png"
     png_image = os.path.join(downpath, f"{f_name.split('.', 1)[0]}.png")
     im.save(png_image, "PNG")
     if png_image != filename:
         os.remove(filename)
     return png_image
-
 
 async def convert_video(filename: str) -> str:
     downpath, f_name = os.path.split(filename)
@@ -340,6 +336,7 @@ async def convert_video(filename: str) -> str:
     return webm_video
 
 __PLUGIN__ = "Sᴛɪᴄᴋᴇʀ"
+
 __HELP__ = """
 **Dᴇsᴄʀɪᴘᴛɪᴏɴ :**
 ʜᴇʀᴇ sᴏᴍᴇ ᴇxᴛʀᴀ ᴄᴏᴍᴍᴀɴᴅ ғᴏʀ ᴛʜɪs ʙᴏᴛ.
