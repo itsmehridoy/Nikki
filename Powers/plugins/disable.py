@@ -7,7 +7,7 @@ from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
 
 from Powers import HELP_COMMANDS
 from Powers.bot_class import Nikki
-from Powers.database.disable_db import (Disabling
+from Powers.database.disable_db import (Disabling,
                                         command, owner_filter)
 
 
