@@ -7,8 +7,8 @@ from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
 
 from Powers import HELP_COMMANDS
 from Powers.bot_class import Nikki
-from Powers.database.disable_db import Disabling
-                                         command, owner_filter)
+from Powers.database.disable_db import (Disabling
+                                        command, owner_filter)
 
 
 @Nikki.on_cmd("disable", group_only=True, self_admin=True)
