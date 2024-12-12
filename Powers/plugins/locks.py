@@ -19,7 +19,7 @@ from Powers.utils.kbhelpers import ikb
 l_t = """
 **Lock Types:**
 - `all` = Everything
-- `msg` = Messages
+- `text` = Messages
 - `media` = Media, such as Photo and Video.
 - `polls` = Polls
 - `invite` = Add users to Group
@@ -84,7 +84,7 @@ async def lock_perm(c: Nikki, m: Message):
         await prevent_approved(m)
         return
 
-    if lock_type in ["msg", "text"]:
+    if lock_type in ("message", "text"):
         msg = False
         perm = "messages"
 
