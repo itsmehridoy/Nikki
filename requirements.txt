@@ -20,7 +20,7 @@ speedtest-cli==2.1.3
 pyfiglet==1.0.2
 pyshorteners==1.0.1
 heroku3==5.2.1
-Abg
+git+https://github.com/Lyfoi/Abg.git
 git+https://github.com/Mayuri-Chan/pyrofork.git
 SQLAlchemy==1.4.44
 telethon==1.38.1
