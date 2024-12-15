@@ -68,7 +68,6 @@ async def eor(msg: Message, **kwargs):
     spec = getfullargspec(func.__wrapped__).args
     return await func(**{k: v for k, v in kwargs.items() if k in spec})
 
-
 @Nikki.on_cmd("webss")
 async def take_ss(_, message: Message):
     if len(message.command) < 2:
@@ -79,12 +78,7 @@ async def take_ss(_, message: Message):
         full = False
     elif len(message.command) == 3:
         url = message.text.split(None, 2)[1]
-        full = message.text.split(None, 2)[2].lower().strip() in [
-            "yes",
-            "y",
-            "1",
-            "true",
-        ]
+        full = message.text.split(None, 2)[2].lower().strip() in ["yes", "y", "1", "true"]
     else:
         return await eor(message, text="ɪɴᴠᴀʟɪᴅ ᴄᴏᴍᴍᴀɴᴅ.")
 
@@ -93,17 +87,14 @@ async def take_ss(_, message: Message):
     try:
         photo = await take_screenshot(url, full)
         if not photo:
-            return await m.edit("ғᴀɪʟᴇᴅ ᴛᴏ ᴛᴀᴋᴇ sᴄʀᴇᴇɴsʜᴏᴛ.")
+            return await m.edit("ғᴀɪʟᴇᴅ ᴛᴏ ᴛᴇᴋᴇ sᴄʀᴇᴇɴsʜᴏᴛ.")
 
         m = await m.edit("ᴜᴘʟᴏᴀᴅɪɴɢ...")
 
-        if not full:
-            await message.reply_document(photo)
-        else:
-            await message.reply_document(photo)
+        await message.reply_document(photo)
         await m.delete()
     except Exception as e:
-        await m.edit(str(e))
+        await m.edit(f"Error: {str(e)}")
 # try
 IS_BROADCASTING = False
 
