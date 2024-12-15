@@ -34,7 +34,6 @@ from Powers.misc import SUDOERS
 from Powers.utils.pastebin import AnonyBin
 from Powers.utils.clean_file import remove_markdown_and_html
 from Powers.utils.parser import mention_markdown
-from Powers.utils.http_helper import post
 import speedtest
 
 async def take_screenshot(url: str, full: bool = False):
