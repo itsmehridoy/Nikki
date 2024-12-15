@@ -577,25 +577,20 @@ async def tr(_, message):
 
     if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
         target_lang = "en" if len(message.text.split()) == 1 else message.text.split()[1]
-        text = message.reply_to_message.text if message.reply_to_message.text else message.reply_to_message.caption
+        text = message.reply_to_message.text or message.reply_to_message.caption
     else:
         if len(message.text.split()) <= 2:
-            await message.reply_text(
-                "Provide a language code\n[Available options](https://telegra.ph/Lang-Codes-09-19).\nUsage: /tr en",
-            )
+            await message.reply_text("Provide a language code\n[Available options](https://telegra.ph/Lang-Codes-09-19).\nUsage: /tr en")
             return
         target_lang, text = message.text.split(None, 2)[1], message.text.split(None, 2)[2]
 
     try:
-        detectlang = await trl.detect(text)
-        translated = await trl.translate(text, dest=target_lang)
+        detectlang = trl.detect(text)
+        translated = trl.translate(text, dest=target_lang)
     except Exception as e:
         await message.reply_text(f"Error: {str(e)}")
         return
-
-    await message.reply_text(
-        f"<b>Translated:</b> from {detectlang.lang} to {target_lang}\n<code>{translated.text}</code>",
-    )
+    await message.reply_text(f"<b>Translated:</b> from {detectlang.lang} to {target_lang}\n<code>{translated.text}</code>")
 
 pattern = re.compile(r"^text/|json$|yaml$|xml$|toml$|x-sh$|x-shellscript$")
 BASE = "https://pasty.lus.pm/"
