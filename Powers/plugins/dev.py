@@ -35,8 +35,7 @@ import speedtest
 
 IS_BROADCASTING = False
 
-@Nikki.on_cmd("broadcast")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("broadcast") & SUDOERS)
 async def braodcast_message(Nikki, message):
     global IS_BROADCASTING
     if message.reply_to_message:
@@ -127,15 +126,13 @@ async def braodcast_message(Nikki, message):
         except:
             pass
 
-@Nikki.on_cmd("stats")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("stats") & SUDOERS)
 async def get_stats(_, message):
     users = len(await get_served_users())
     chats = len(await get_served_chats())
     await message.reply_text(f"Current stats of {Nikki.name}:\n\n{users} users\n{chats} chats")
 
-@Nikki.on_cmd("ping")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("ping") & SUDOERS)
 async def ping(_, m: Message):
     LOGGER.info(f"{m.from_user.id} used ping cmd in {m.chat.id}")
     start = time()
@@ -144,8 +141,7 @@ async def ping(_, m: Message):
     await replymsg.edit_text(f"<b>Pong!</b>\n{delta_ping * 1000:.3f} ms")
     return
 
-@Nikki.on_cmd("chatlist")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("chatlist") & SUDOERS)
 async def chats(c: Nikki, m: Message):
     exmsg = await m.reply_text(text="Exporting Charlist...")
     all_chats = (Chats.list_chats_full()) or {}
@@ -191,8 +187,7 @@ async def chats(c: Nikki, m: Message):
     return
 
 
-@Nikki.on_cmd("uptime")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("uptime") & SUDOERS)
 async def uptime(_, m: Message):
     up = strftime("%Hh %Mm %Ss", gmtime(time() - UPTIME))
     await m.reply_text(text=f"<b>Uptime:</b> <code>{up}</code>", quote=True)
@@ -214,8 +209,7 @@ def testspeed(m):
     return result
 
 
-@Nikki.on_cmd("spt")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("spt") & SUDOERS)
 async def speedtest_function(Nikki, message):
     m = await message.reply_text("💫 ᴛʀʏɪɴɢ ᴛᴏ ᴄʜᴇᴄᴋ ᴜᴩʟᴏᴀᴅ ᴀɴᴅ ᴅᴏᴡɴʟᴏᴀᴅ sᴩᴇᴇᴅ...")
     loop = asyncio.get_event_loop()
@@ -238,9 +232,8 @@ async def speedtest_function(Nikki, message):
         caption=output
     )
     await m.delete()
-  
-@Nikki.on_cmd("leavechat")
-@Nikki.adminsOnly(only_dev=True)
+
+@Nikki.on_message(command("leavechat") & SUDOERS)
 async def leave_chat(c: Nikki, m: Message):
     if len(m.text.split()) != 2:
         await m.reply_text("Supply a chat id which I should leave!", quoet=True)
@@ -257,7 +250,7 @@ async def leave_chat(c: Nikki, m: Message):
         await replymsg.edit_text(f"Failed to leave chat!\nError: <code>{ef}</code>.")
     return
   
-@Nikki.on_message(command(["cleandb","cleandatabase"]) & SUDOERS)
+@Nikki.on_message(command("cleandb") & SUDOERS)
 async def cleeeen(c: Nikki,m:Message):
     x = await m.reply_text("Cleaning the database...")
     try:
@@ -275,8 +268,7 @@ async def cleeeen(c: Nikki,m:Message):
         LOGGER.error(format_exc())
         return
 
-@Nikki.on_cmd("restart")
-@Nikki.adminsOnly(only_dev=True)
+@Nikki.on_message(command("restart") & SUDOERS)
 async def restart_(_, message):
     response = await message.reply_text("ʀᴇsᴛᴀʀᴛɪɴɢ...")
     try:
