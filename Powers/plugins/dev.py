@@ -2,6 +2,7 @@ import asyncio
 import os
 import shutil
 import socket
+import aiohttp
 from datetime import datetime
 from io import BytesIO
 from time import gmtime, time
@@ -47,17 +48,18 @@ async def take_screenshot(url: str, full: bool = False):
     }
     if full:
         payload["full"] = True
-    data = await post(
-        "https://webscreenshot.vercel.app/api",
-        data=payload,
-    )
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post("https://webscreenshot.vercel.app/api", data=payload) as response:
+            data = await response.json()
+
     if "image" not in data:
         return None
+    
     b = data["image"].replace("data:image/jpeg;base64,", "")
     file = BytesIO(b64decode(b))
     file.name = "webss.jpg"
     return file
-
 
 async def eor(msg: Message, **kwargs):
     func = (
@@ -88,9 +90,8 @@ async def take_ss(_, message: Message):
         photo = await take_screenshot(url, full)
         if not photo:
             return await m.edit("ғᴀɪʟᴇᴅ ᴛᴏ ᴛᴇᴋᴇ sᴄʀᴇᴇɴsʜᴏᴛ.")
-
+        
         m = await m.edit("ᴜᴘʟᴏᴀᴅɪɴɢ...")
-
         await message.reply_document(photo)
         await m.delete()
     except Exception as e:
