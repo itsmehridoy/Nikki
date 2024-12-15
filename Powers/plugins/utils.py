@@ -590,7 +590,7 @@ async def tr(_, message):
     except Exception as e:
         await message.reply_text(f"Error: {str(e)}")
         return
-    await message.reply_text(f"<b>Translated:</b> from {detectlang.lang} to {target_lang}\n<code>{translated.text}</code>")
+    await message.reply_text(f"<b>Language:</b> {detectlang.lang} ->  {target_lang}\n<b>Translation: {translated.text}</b>")
 
 pattern = re.compile(r"^text/|json$|yaml$|xml$|toml$|x-sh$|x-shellscript$")
 BASE = "https://pasty.lus.pm/"
