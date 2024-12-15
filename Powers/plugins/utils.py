@@ -19,7 +19,7 @@ from pyrogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                             Message, CallbackQuery)
 from extras.fonts import Fonts
 from pyrogram.enums import ChatMembersFilter, ChatMemberStatus as CMS, ParseMode
-from gpytranslate import Translator
+from googletrans import Translator
 from Powers.utils.http_helper import *
 
 from Powers.bot_class import Nikki
@@ -574,33 +574,27 @@ async def get_gifid(_, m: Message):
 @Nikki.on_cmd("tr")
 async def tr(_, message):
     trl = Translator()
-    if message.reply_to_message and (
-        message.reply_to_message.text or message.reply_to_message.caption
-    ):
-        if len(message.text.split()) == 1:
-            target_lang = "en"
-        else:
-            target_lang = message.text.split()[1]
-        if message.reply_to_message.text:
-            text = message.reply_to_message.text
-        else:
-            text = message.reply_to_message.caption
+
+    if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
+        target_lang = "en" if len(message.text.split()) == 1 else message.text.split()[1]
+        text = message.reply_to_message.text if message.reply_to_message.text else message.reply_to_message.caption
     else:
         if len(message.text.split()) <= 2:
             await message.reply_text(
-                "ᴘʀᴏᴠɪᴅᴇ ʟᴀɴɢ ᴄᴏᴅᴇ\n[ᴀᴠᴀɪʟᴀʙʟᴇ ᴏᴘᴛɪᴏɴs](https://telegra.ph/Lang-Codes-09-19).\n<b>ᴜsᴀɢᴇ:</b> <code>/tr en</code>",
+                "Provide a language code\n[Available options](https://telegra.ph/Lang-Codes-09-19).\nUsage: /tr en",
             )
             return
-        target_lang = message.text.split(None, 2)[1]
-        text = message.text.split(None, 2)[2]
-    detectlang = await trl.detect(text)
+        target_lang, text = message.text.split(None, 2)[1], message.text.split(None, 2)[2]
+
     try:
-        tekstr = await trl(text, targetlang=target_lang)
-    except ValueError as err:
-        await message.reply_text(f"Error: <code>{str(err)}</code>")
+        detectlang = await trl.detect(text)
+        translated = await trl.translate(text, dest=target_lang)
+    except Exception as e:
+        await message.reply_text(f"Error: {str(e)}")
         return
-    return await message.reply_text(
-        f"<b>ᴛʀᴀɴsʟᴀᴛᴇᴅ:</b> ғʀᴏᴍ {detectlang} ᴛᴏ {target_lang} \n<code>``{tekstr.text}``</code>",
+
+    await message.reply_text(
+        f"<b>Translated:</b> from {detectlang.lang} to {target_lang}\n<code>{translated.text}</code>",
     )
 
 pattern = re.compile(r"^text/|json$|yaml$|xml$|toml$|x-sh$|x-shellscript$")
