@@ -62,7 +62,7 @@ def calc_btn(uid):
     )
 
 
-@app.on_message(filters.command(["calc", "calculate", "calculator"]))
+@Nikki.on_message(filters.command(["calc", "calculate", "calculator"]))
 async def calculate_handler(self, ctx):
     if not ctx.from_user:
         return
@@ -74,7 +74,7 @@ async def calculate_handler(self, ctx):
     )
 
 
-@app.on_callback_query(filters.regex("^calc"))
+@Nikki.on_callback_query(filters.regex("^calc"))
 async def calc_cb(self, query):
     _, uid, data = query.data.split("|")
     if query.from_user.id != int(uid):
