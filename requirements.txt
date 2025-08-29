@@ -26,6 +26,6 @@ SQLAlchemy==1.4.44
 telethon==1.38.1
 psycopg2==2.9.10
 telegraph==2.2.0
-captcha==0.6.0
+captcha==0.7.1
 qrcode==8.0
 bs4==0.0.2
