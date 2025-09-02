@@ -9,7 +9,7 @@ gitpython==3.1.43
 googletrans==4.0.0-rc1
 pymongo==4.11.3
 pytz==2024.2
-regex==2023.12.25
+regex==2025.9.1
 requests==2.32.3
 tgcrypto==1.2.5
 ujson==5.10.0
