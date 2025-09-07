@@ -23,7 +23,7 @@ heroku3==5.2.1
 git+https://github.com/Lyfoi/Abg.git
 git+https://github.com/Mayuri-Chan/pyrofork.git
 SQLAlchemy==1.4.44
-telethon==1.38.1
+telethon==1.41.2
 psycopg2==2.9.10
 telegraph==2.2.0
 captcha==0.6.0
