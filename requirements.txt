@@ -13,7 +13,7 @@ regex==2023.12.25
 requests==2.32.3
 tgcrypto==1.2.5
 ujson==5.10.0
-urllib3==2.2.3
+urllib3==2.6.2
 motor[srv]==3.3.2
 python-dotenv==1.0.1
 speedtest-cli==2.1.3
