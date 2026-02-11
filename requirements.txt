@@ -4,7 +4,7 @@ apscheduler==3.10.4
 asyncio==3.4.3
 beautifulsoup4==4.12.3
 cachetools==5.5.0
-pillow==10.2.0
+pillow==12.1.0
 gitpython==3.1.43
 googletrans==4.0.0-rc1
 pymongo==4.11.3
